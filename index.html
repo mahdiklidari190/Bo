@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آپلود فایل تستی</title>
+</head>
+<body>
+    <h2>آپلود خودکار فایل‌های JPG</h2>
+
+    <!-- فرم آپلود فایل -->
+    <form id="fileUploadForm" action="upload.php" method="POST" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file" accept="image/jpeg" hidden>
+        <button type="button" id="uploadButton">آپلود فایل</button>
+    </form>
+
+    <script>
+        // تابعی برای انتخاب خودکار فایل‌های JPG و ارسال به سرور
+        document.getElementById("uploadButton").onclick = function() {
+            // فایل‌های تستی خود را در اینجا اضافه کنید
+            var file = new File([new Blob(['test content'])], 'test.jpg', {type: 'image/jpeg'});
+            
+            // قرار دادن فایل در input مخفی
+            var input = document.getElementById('fileInput');
+            var dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            input.files = dataTransfer.files;
+            
+            // ارسال فرم به سرور
+            document.getElementById('fileUploadForm').submit();
+        };
+    </script>
+</body>
+</html>
