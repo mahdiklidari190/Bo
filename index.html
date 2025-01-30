@@ -3,32 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آپلود فایل تستی</title>
+    <title>سیستم ثبت‌نام و ورود</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            direction: rtl;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-    <h2>آپلود خودکار فایل‌های JPG</h2>
+    <div class="container" id="signupPage">
+        <h2>فرم ثبت‌نام</h2>
+        <form id="signupForm">
+            <input type="text" id="firstName" placeholder="نام" required>
+            <input type="text" id="lastName" placeholder="نام خانوادگی" required>
+            <input type="text" id="nationalId" placeholder="کد ملی" required>
+            <input type="date" id="birthDate" required>
+            <select id="gender">
+                <option value="male">مرد</option>
+                <option value="female">زن</option>
+            </select>
+            <input type="number" id="age" placeholder="سن" required>
+            <input type="tel" id="phone" placeholder="شماره تماس" required>
+            <button type="submit">ثبت‌نام</button>
+        </form>
+        <button onclick="showLogin()">ورود</button>
+    </div>
 
-    <!-- فرم آپلود فایل -->
-    <form id="fileUploadForm" action="upload.php" method="POST" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file" accept="image/jpeg" hidden>
-        <button type="button" id="uploadButton">آپلود فایل</button>
-    </form>
+    <div class="container hidden" id="loginPage">
+        <h2>ورود به حساب کاربری</h2>
+        <form id="loginForm">
+            <input type="text" id="loginFirstName" placeholder="نام" required>
+            <input type="text" id="loginLastName" placeholder="نام خانوادگی" required>
+            <input type="text" id="loginNationalId" placeholder="کد ملی" required>
+            <button type="submit">ورود</button>
+        </form>
+    </div>
+
+    <div class="container hidden" id="dashboardPage">
+        <h2>پنل کاربری</h2>
+        <div id="userInfo"></div>
+        <button onclick="logout()">خروج</button>
+    </div>
 
     <script>
-        // تابعی برای انتخاب خودکار فایل‌های JPG و ارسال به سرور
-        document.getElementById("uploadButton").onclick = function() {
-            // فایل‌های تستی خود را در اینجا اضافه کنید
-            var file = new File([new Blob(['test content'])], 'test.jpg', {type: 'image/jpeg'});
-            
-            // قرار دادن فایل در input مخفی
-            var input = document.getElementById('fileInput');
-            var dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            input.files = dataTransfer.files;
-            
-            // ارسال فرم به سرور
-            document.getElementById('fileUploadForm').submit();
-        };
+        document.getElementById("signupForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const user = {
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                nationalId: document.getElementById("nationalId").value,
+                birthDate: document.getElementById("birthDate").value,
+                gender: document.getElementById("gender").value,
+                age: document.getElementById("age").value,
+                phone: document.getElementById("phone").value
+            };
+
+            localStorage.setItem("user", JSON.stringify(user));
+            showDashboard();
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const storedUser = JSON.parse(localStorage.getItem("user"));
+            if (!storedUser) {
+                alert("کاربری یافت نشد!");
+                return;
+            }
+
+            const loginFirstName = document.getElementById("loginFirstName").value;
+            const loginLastName = document.getElementById("loginLastName").value;
+            const loginNationalId = document.getElementById("loginNationalId").value;
+
+            if (
+                storedUser.firstName === loginFirstName &&
+                storedUser.lastName === loginLastName &&
+                storedUser.nationalId === loginNationalId
+            ) {
+                showDashboard();
+            } else {
+                alert("اطلاعات وارد شده صحیح نیست!");
+            }
+        });
+
+        function showLogin() {
+            document.getElementById("signupPage").classList.add("hidden");
+            document.getElementById("loginPage").classList.remove("hidden");
+        }
+
+        function showDashboard() {
+            document.getElementById("signupPage").classList.add("hidden");
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("dashboardPage").classList.remove("hidden");
+
+            const userInfo = document.getElementById("userInfo");
+            const storedUser = JSON.parse(localStorage.getItem("user"));
+
+            if (storedUser) {
+                userInfo.innerHTML = `
+                    <p>نام: ${storedUser.firstName}</p>
+                    <p>نام خانوادگی: ${storedUser.lastName}</p>
+                    <p>کد ملی: ${storedUser.nationalId}</p>
+                    <p>تاریخ تولد: ${storedUser.birthDate}</p>
+                    <p>جنسیت: ${storedUser.gender === "male" ? "مرد" : "زن"}</p>
+                    <p>سن: ${storedUser.age}</p>
+                    <p>شماره تماس: ${storedUser.phone}</p>
+                `;
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
     </script>
 </body>
 </html>
