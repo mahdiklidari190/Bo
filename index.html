@@ -7,64 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #28a745, #155724);
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 320px;
-            margin: 100px auto;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-        }
-        input, button {
-            width: 100%;
-            height: 40px;
-            margin: 5px 0;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-        input {
-            background: #ddd;
-        }
-        button {
-            background: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #218838;
-        }
-        a {
-            color: #28a745;
-            cursor: pointer;
-        }
-        a:hover {
-            color: #1e7e34;
-        }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .gender-container label {
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .gender-container input {
-            transform: scale(1.5);
-        }
+        /* استایل‌ها */
     </style>
 </head>
 <body>
@@ -72,10 +15,10 @@
     <div class="container">
         <div id="signup">
             <h2>ثبت‌نام</h2>
-            <input type="text" id="name" placeholder="نام" oninput="validatePersian(this)">
-            <input type="text" id="family" placeholder="نام خانوادگی" oninput="validatePersian(this)">
+            <input type="text" id="name" placeholder="نام">
+            <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="text" id="birthdate" placeholder="تاریخ تولد (۱۴۰۲/۰۵/۱۰)">
+            <input type="text" id="birthdate" placeholder="تاریخ تولد (روز/ماه/سال)">
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="male"> مرد</label>
                 <label><input type="radio" name="gender" value="female"> زن</label>
@@ -110,10 +53,6 @@
     </div>
 
     <script>
-        function validatePersian(input) {
-            input.value = input.value.replace(/[^آ-ی\s]/g, '');
-        }
-
         function register() {
             let user = {
                 name: document.getElementById("name").value,
@@ -125,7 +64,7 @@
                 phone: document.getElementById("phone").value
             };
 
-            if (user.name && user.family && user.nationalCode) {
+            if (user.name && user.family && user.nationalCode && user.birthdate) {
                 localStorage.setItem("user", JSON.stringify(user));
                 alert("ثبت‌نام با موفقیت انجام شد!");
                 showLogin();
@@ -166,10 +105,21 @@
             document.getElementById("signup").style.display = "block";
         }
 
+        function showLogin() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "block";
+        }
+
+        function showSignup() {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("signup").style.display = "block";
+        }
+
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
-            doc.setFont("helvetica");
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(12);
 
             doc.text("اطلاعات کاربری", 10, 10);
             doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
@@ -179,8 +129,8 @@
             doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
             doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
             doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
-
-            doc.save("اطلاعات_کاربری.pdf");
+            
+            doc.save("UserInfo.pdf");
         }
     </script>
 
