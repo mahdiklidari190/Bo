@@ -7,31 +7,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
-        @keyframes fall {
-            0% { transform: translateY(-10vh) rotate(0deg); }
-            100% { transform: translateY(100vh) rotate(360deg); }
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(120deg, #28a745, #155724);
+            background: linear-gradient(to right, #28a745, #155724);
             color: white;
             text-align: center;
             margin: 0;
             padding: 0;
-            overflow: hidden;
         }
-
         .container {
             width: 320px;
             margin: 100px auto;
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            position: relative;
-            z-index: 10;
         }
-
         input, button {
             width: 100%;
             height: 40px;
@@ -42,46 +32,38 @@
             border-radius: 5px;
             text-align: center;
         }
-
         input {
-            background: rgba(255, 255, 255, 0.8);
-            transition: all 0.3s ease-in-out;
+            background: #ddd;
         }
-
-        input:focus {
-            background: white;
-            box-shadow: 0 0 8px #28a745;
-        }
-
         button {
-            background: linear-gradient(45deg, #28a745, #1e7e34);
+            background: #28a745;
             color: white;
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
         }
-
         button:hover {
-            background: linear-gradient(45deg, #1e7e34, #155724);
-            transform: scale(1.05);
+            background: #218838;
         }
-
         a {
             color: #28a745;
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
         }
-
         a:hover {
             color: #1e7e34;
-            transform: scale(1.1);
         }
-
-        .leaf {
-            position: absolute;
-            top: -10vh;
-            font-size: 24px;
-            opacity: 0.8;
-            animation: fall linear infinite;
+        .gender-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .gender-container label {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .gender-container input {
+            transform: scale(1.5);
         }
     </style>
 </head>
@@ -92,7 +74,14 @@
             <h2>ثبت‌نام</h2>
             <input type="text" id="name" placeholder="نام" oninput="validatePersian(this)">
             <input type="text" id="family" placeholder="نام خانوادگی" oninput="validatePersian(this)">
+            <input type="text" id="nationalCode" placeholder="کد ملی">
             <input type="text" id="birthdate" placeholder="تاریخ تولد (۱۴۰۲/۰۵/۱۰)">
+            <div class="gender-container">
+                <label><input type="radio" name="gender" value="male"> مرد</label>
+                <label><input type="radio" name="gender" value="female"> زن</label>
+            </div>
+            <input type="number" id="age" placeholder="سن">
+            <input type="text" id="phone" placeholder="شماره تماس">
             <button onclick="register()">ثبت‌نام</button>
             <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
@@ -101,6 +90,7 @@
             <h2>ورود</h2>
             <input type="text" id="loginName" placeholder="نام">
             <input type="text" id="loginFamily" placeholder="نام خانوادگی">
+            <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <button onclick="login()">ورود</button>
             <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
         </div>
@@ -109,7 +99,11 @@
             <h2>پنل کاربری</h2>
             <p><strong>نام:</strong> <span id="userName"></span></p>
             <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
+            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
             <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
+            <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
+            <p><strong>سن:</strong> <span id="userAge"></span></p>
+            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
             <button onclick="downloadPDF()">دانلود PDF</button>
             <button onclick="logout()">خروج</button>
         </div>
@@ -124,10 +118,14 @@
             let user = {
                 name: document.getElementById("name").value,
                 family: document.getElementById("family").value,
-                birthdate: document.getElementById("birthdate").value
+                nationalCode: document.getElementById("nationalCode").value,
+                birthdate: document.getElementById("birthdate").value,
+                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+                age: document.getElementById("age").value,
+                phone: document.getElementById("phone").value
             };
 
-            if (user.name && user.family) {
+            if (user.name && user.family && user.nationalCode) {
                 localStorage.setItem("user", JSON.stringify(user));
                 alert("ثبت‌نام با موفقیت انجام شد!");
                 showLogin();
@@ -140,11 +138,12 @@
             let storedUser = JSON.parse(localStorage.getItem("user"));
             let loginName = document.getElementById("loginName").value;
             let loginFamily = document.getElementById("loginFamily").value;
+            let loginNationalCode = document.getElementById("loginNationalCode").value;
 
-            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily) {
+            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
                 showDashboard(storedUser);
             } else {
-                alert("نام یا نام خانوادگی اشتباه است.");
+                alert("نام، نام خانوادگی یا کد ملی اشتباه است.");
             }
         }
 
@@ -155,7 +154,11 @@
 
             document.getElementById("userName").innerText = user.name;
             document.getElementById("userFamily").innerText = user.family;
+            document.getElementById("userNationalCode").innerText = user.nationalCode;
             document.getElementById("userBirthdate").innerText = user.birthdate;
+            document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
+            document.getElementById("userAge").innerText = user.age;
+            document.getElementById("userPhone").innerText = user.phone;
         }
 
         function logout() {
@@ -171,25 +174,14 @@
             doc.text("اطلاعات کاربری", 10, 10);
             doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
             doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
-            doc.text(`تاریخ تولد: ${document.getElementById("userBirthdate").innerText}`, 10, 40);
+            doc.text(`کد ملی: ${document.getElementById("userNationalCode").innerText}`, 10, 40);
+            doc.text(`تاریخ تولد: ${document.getElementById("userBirthdate").innerText}`, 10, 50);
+            doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
+            doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
+            doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
 
             doc.save("اطلاعات_کاربری.pdf");
         }
-
-        function createLeaves() {
-            const colors = ["🍂", "🍃", "🍁"];
-            for (let i = 0; i < 30; i++) {
-                let leaf = document.createElement("div");
-                leaf.classList.add("leaf");
-                leaf.innerHTML = colors[Math.floor(Math.random() * colors.length)];
-                leaf.style.left = Math.random() * 100 + "vw";
-                leaf.style.animationDuration = (Math.random() * 5 + 5) + "s";
-                leaf.style.fontSize = (Math.random() * 10 + 20) + "px";
-                document.body.appendChild(leaf);
-            }
-        }
-        
-        createLeaves();
     </script>
 
 </body>
