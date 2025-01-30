@@ -7,74 +7,55 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
-        /* استایل قبلی سایت که زیبایی بیشتری داشت */
         body {
-            font-family: 'Arial', sans-serif;
-            direction: rtl;
-            text-align: right;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        button {
-            padding: 12px;
-            background-color: #4CAF50;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #28a745, #155724);
             color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        input, select, button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
             border: none;
             border-radius: 5px;
+        }
+        input, select {
+            background: #ddd;
+        }
+        button {
+            background: #28a745;
+            color: white;
             cursor: pointer;
-            width: 100%;
-            font-size: 16px;
         }
-
         button:hover {
-            background-color: #45a049;
+            background: #218838;
         }
-
-        h2 {
-            text-align: center;
-            color: #333;
+        a {
+            color: #28a745;
+            cursor: pointer;
         }
-
+        a:hover {
+            color: #1e7e34;
+        }
         .gender-container {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            gap: 10px;
         }
-
         .gender-container label {
-            margin-right: 10px;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .footer a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 </head>
@@ -86,7 +67,7 @@
             <input type="text" id="name" placeholder="نام">
             <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="text" id="birthdate" placeholder="تاریخ تولد (روز/ماه/سال)">
+            <input type="date" id="birthdate">
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="male"> مرد</label>
                 <label><input type="radio" name="gender" value="female"> زن</label>
@@ -94,9 +75,7 @@
             <input type="number" id="age" placeholder="سن">
             <input type="text" id="phone" placeholder="شماره تماس">
             <button onclick="register()">ثبت‌نام</button>
-            <div class="footer">
-                <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-            </div>
+            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
 
         <div id="login" style="display: none;">
@@ -105,9 +84,7 @@
             <input type="text" id="loginFamily" placeholder="نام خانوادگی">
             <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <button onclick="login()">ورود</button>
-            <div class="footer">
-                <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
-            </div>
+            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
         </div>
 
         <div id="dashboard" style="display: none;">
@@ -125,18 +102,24 @@
     </div>
 
     <script>
+        function toJalali(dateString) {
+            let date = new Date(dateString);
+            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+        }
+
         function register() {
             let user = {
                 name: document.getElementById("name").value,
                 family: document.getElementById("family").value,
                 nationalCode: document.getElementById("nationalCode").value,
-                birthdate: document.getElementById("birthdate").value,
+                birthdate: toJalali(document.getElementById("birthdate").value),
                 gender: document.querySelector('input[name="gender"]:checked')?.value || '',
                 age: document.getElementById("age").value,
                 phone: document.getElementById("phone").value
             };
 
-            if (user.name && user.family && user.nationalCode && user.birthdate) {
+            if (user.name && user.family && user.nationalCode) {
                 localStorage.setItem("user", JSON.stringify(user));
                 alert("ثبت‌نام با موفقیت انجام شد!");
                 showLogin();
@@ -190,13 +173,10 @@
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
-
-            // تنظیم فونت فارسی
-            doc.addFileToVFS("Vazir-Regular.ttf", "Base64-encoded-Vazir-Regular-font-data");
-            doc.addFont("Vazir-Regular.ttf", "Vazir", "normal");
-            doc.setFont("Vazir");
-
-            doc.setFontSize(14);
+            // استفاده از فونت فارسی
+            doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/fonts/vazir.ttf', 'Vazir', 'normal');
+            doc.setFont('Vazir');
+            
             doc.text("اطلاعات کاربری", 10, 10);
             doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
             doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
@@ -205,7 +185,6 @@
             doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
             doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
             doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
-
             doc.save("UserInfo.pdf");
         }
     </script>
