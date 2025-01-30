@@ -7,31 +7,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
-        /* استایل‌ها */
+        /* استایل قبلی سایت که زیبایی بیشتری داشت */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             direction: rtl;
             text-align: right;
+            background-color: #f4f4f4;
             padding: 20px;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         input {
             width: 100%;
             padding: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
             font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
         }
 
         button {
-            padding: 10px;
+            padding: 12px;
             background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
             width: 100%;
             font-size: 16px;
@@ -41,6 +49,11 @@
             background-color: #45a049;
         }
 
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
         .gender-container {
             display: flex;
             justify-content: space-around;
@@ -48,6 +61,20 @@
 
         .gender-container label {
             margin-right: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -67,7 +94,9 @@
             <input type="number" id="age" placeholder="سن">
             <input type="text" id="phone" placeholder="شماره تماس">
             <button onclick="register()">ثبت‌نام</button>
-            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
+            <div class="footer">
+                <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
+            </div>
         </div>
 
         <div id="login" style="display: none;">
@@ -76,7 +105,9 @@
             <input type="text" id="loginFamily" placeholder="نام خانوادگی">
             <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+            <div class="footer">
+                <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+            </div>
         </div>
 
         <div id="dashboard" style="display: none;">
