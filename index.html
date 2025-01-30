@@ -58,16 +58,49 @@
             gap: 5px;
         }
         .user-card {
-            width: 300px;
-            height: 400px;
+            width: 350px;
+            height: 200px;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: right;
             margin: 0 auto;
+            position: relative;
+        }
+        .user-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .user-card h3 {
+            margin: 10px 0;
         }
         .user-card p {
-            margin: 10px 0;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .user-card .details {
+            margin-top: 20px;
+        }
+        .user-card .details p {
+            font-size: 12px;
+            color: #555;
+        }
+        .user-card .download-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .user-card .download-btn:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -102,6 +135,8 @@
         <div id="dashboard" style="display: none;">
             <h2>پنل کاربری</h2>
             <div id="userCard" class="user-card">
+                <img src="https://via.placeholder.com/60" alt="User Photo">
+                <h3>کارت شناسایی</h3>
                 <p><strong>نام:</strong> <span id="userName"></span></p>
                 <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
                 <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
@@ -109,8 +144,11 @@
                 <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
                 <p><strong>سن:</strong> <span id="userAge"></span></p>
                 <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+                <div class="details">
+                    <p><strong>جزئیات:</strong> اطلاعات کامل شما</p>
+                </div>
+                <button class="download-btn" onclick="downloadImage()">دانلود کارت</button>
             </div>
-            <button onclick="downloadImage()">دانلود کارت</button>
             <button onclick="logout()">خروج</button>
         </div>
     </div>
