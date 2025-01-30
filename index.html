@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ثبت‌نام | ورود | پنل کاربری</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +15,6 @@
             margin: 0;
             padding: 0;
         }
-
         .container {
             width: 300px;
             margin: 100px auto;
@@ -21,7 +22,6 @@
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
         }
-
         input, select, button {
             width: 100%;
             margin: 5px 0;
@@ -29,28 +29,33 @@
             border: none;
             border-radius: 5px;
         }
-
         input, select {
             background: #ddd;
         }
-
         button {
             background: #28a745;
             color: white;
             cursor: pointer;
         }
-
         button:hover {
             background: #218838;
         }
-
         a {
             color: #28a745;
             cursor: pointer;
         }
-
         a:hover {
             color: #1e7e34;
+        }
+        .gender-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gender-container label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 </head>
@@ -63,10 +68,10 @@
             <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
             <input type="date" id="birthdate">
-            <select id="gender">
-                <option value="male">مرد</option>
-                <option value="female">زن</option>
-            </select>
+            <div class="gender-container">
+                <label><input type="radio" name="gender" value="male"> مرد</label>
+                <label><input type="radio" name="gender" value="female"> زن</label>
+            </div>
             <input type="number" id="age" placeholder="سن">
             <input type="text" id="phone" placeholder="شماره تماس">
             <button onclick="register()">ثبت‌نام</button>
@@ -91,18 +96,25 @@
             <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
             <p><strong>سن:</strong> <span id="userAge"></span></p>
             <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+            <button onclick="downloadPDF()">دانلود PDF</button>
             <button onclick="logout()">خروج</button>
         </div>
     </div>
 
     <script>
+        function toJalali(dateString) {
+            let date = new Date(dateString);
+            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+        }
+
         function register() {
             let user = {
                 name: document.getElementById("name").value,
                 family: document.getElementById("family").value,
                 nationalCode: document.getElementById("nationalCode").value,
-                birthdate: document.getElementById("birthdate").value,
-                gender: document.getElementById("gender").value,
+                birthdate: toJalali(document.getElementById("birthdate").value),
+                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
                 age: document.getElementById("age").value,
                 phone: document.getElementById("phone").value
             };
@@ -156,6 +168,15 @@
         function showSignup() {
             document.getElementById("login").style.display = "none";
             document.getElementById("signup").style.display = "block";
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            doc.text("اطلاعات کاربری", 10, 10);
+            doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
+            doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
+            doc.save("UserInfo.pdf");
         }
     </script>
 
