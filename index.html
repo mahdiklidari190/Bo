@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثبت‌نام | ورود | پنل کاربری</title>
+    <title>پنل کاربری</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@0.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -16,253 +16,105 @@
             padding: 0;
         }
 
-        .container {
-            width: 350px;
-            margin: 100px auto;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
+        .form-container {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            margin: 20px auto;
             border-radius: 10px;
-            margin-left: auto;
-            margin-right: auto;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
-        .container input, .container select, .container button {
-            width: 100%;
-            margin: 8px 0;
+        input {
+            width: 90%;
             padding: 10px;
+            margin: 5px 0;
             border: none;
             border-radius: 5px;
-        }
-
-        input, select {
-            background: #ddd;
+            text-align: center;
         }
 
         button {
-            background: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #218838;
-        }
-
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .gender-container label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* فرم‌ها به صورت flex برای چینش منظم */
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .form-container input,
-        .form-container button {
-            width: 80%;
-            margin: 10px 0;
-        }
-
-        /* کارت اطلاعات به صورت شبیه کارت شناسایی */
-        .user-card {
-            width: 400px;
-            height: 250px;
-            padding: 20px;
-            background: #f0f0f0;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            margin: 20px auto;
-            position: relative;
-        }
-
-        .user-card img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        .user-card .details {
-            flex: 1;
-            margin-left: 100px;
-        }
-
-        .user-card h3 {
-            margin: 10px 0;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .user-card p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .download-btn {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
+            font-size: 16px;
         }
 
-        .download-btn:hover {
-            background-color: #218838;
+        .logout-btn {
+            background-color: red;
+            color: white;
+        }
+
+        .download-btn {
+            background-color: blue;
+            color: white;
+        }
+
+        /* کارت شناسایی */
+        .card-container {
+            width: 220px;
+            height: 130px;
+            background: black;
+            color: white;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-info {
+            font-size: 14px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="signup">
-            <h2>ثبت‌نام</h2>
-            <div class="form-container">
-                <input type="text" id="name" placeholder="نام">
-                <input type="text" id="family" placeholder="نام خانوادگی">
-                <input type="text" id="nationalCode" placeholder="کد ملی">
-                <input type="date" id="birthdate">
-                <div class="gender-container">
-                    <label><input type="radio" name="gender" value="male"> مرد</label>
-                    <label><input type="radio" name="gender" value="female"> زن</label>
-                </div>
-                <input type="number" id="age" placeholder="سن">
-                <input type="text" id="phone" placeholder="شماره تماس">
-                <button onclick="register()">ثبت‌نام</button>
-            </div>
-            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-        </div>
+    <div class="form-container">
+        <h2>اطلاعات کاربری</h2>
+        <input type="text" id="name" placeholder="نام">
+        <input type="text" id="idNumber" placeholder="شماره شناسایی">
+        <button class="logout-btn">خروج</button>
+        <button class="download-btn" onclick="downloadCard()">دانلود کارت</button>
+    </div>
 
-        <div id="login" style="display: none;">
-            <h2>ورود</h2>
-            <div class="form-container">
-                <input type="text" id="loginName" placeholder="نام">
-                <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-                <input type="text" id="loginNationalCode" placeholder="کد ملی">
-                <button onclick="login()">ورود</button>
-            </div>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
-        </div>
-
-        <div id="dashboard" style="display: none;">
-            <h2>پنل کاربری</h2>
-            <div id="userCard" class="user-card">
-                <img src="https://via.placeholder.com/80" alt="User Photo">
-                <div class="details">
-                    <h3>کارت شناسایی</h3>
-                    <p><strong>نام:</strong> <span id="userName"></span></p>
-                    <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-                    <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-                    <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-                    <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-                    <p><strong>سن:</strong> <span id="userAge"></span></p>
-                    <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
-                </div>
-                <button class="download-btn" onclick="downloadImage()">دانلود کارت</button>
-            </div>
-            <button onclick="logout()">خروج</button>
-        </div>
+    <div class="card-container" id="idCard">
+        <div class="card-title">کارت شناسایی</div>
+        <div class="card-info">نام: <span id="cardName">---</span></div>
+        <div class="card-info">شماره شناسایی: <span id="cardId">---</span></div>
     </div>
 
     <script>
-        function toJalali(dateString) {
-            let date = new Date(dateString);
-            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+        function updateCard() {
+            document.getElementById('cardName').innerText = document.getElementById('name').value;
+            document.getElementById('cardId').innerText = document.getElementById('idNumber').value;
         }
 
-        function register() {
-            let user = {
-                name: document.getElementById("name").value,
-                family: document.getElementById("family").value,
-                nationalCode: document.getElementById("nationalCode").value,
-                birthdate: toJalali(document.getElementById("birthdate").value),
-                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-                age: document.getElementById("age").value,
-                phone: document.getElementById("phone").value
-            };
+        document.getElementById('name').addEventListener('input', updateCard);
+        document.getElementById('idNumber').addEventListener('input', updateCard);
 
-            if (user.name && user.family && user.nationalCode) {
-                localStorage.setItem("user", JSON.stringify(user));
-                alert("ثبت‌نام با موفقیت انجام شد!");
-                showLogin();
-            } else {
-                alert("لطفاً تمام فیلدها را پر کنید.");
-            }
-        }
-
-        function login() {
-            let storedUser = JSON.parse(localStorage.getItem("user"));
-            let loginName = document.getElementById("loginName").value;
-            let loginFamily = document.getElementById("loginFamily").value;
-            let loginNationalCode = document.getElementById("loginNationalCode").value;
-
-            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
-                showDashboard(storedUser);
-            } else {
-                alert("نام، نام خانوادگی یا کد ملی اشتباه است.");
-            }
-        }
-
-        function showDashboard(user) {
-            document.getElementById("signup").style.display = "none";
-            document.getElementById("login").style.display = "none";
-            document.getElementById("dashboard").style.display = "block";
-
-            document.getElementById("userName").innerText = user.name;
-            document.getElementById("userFamily").innerText = user.family;
-            document.getElementById("userNationalCode").innerText = user.nationalCode;
-            document.getElementById("userBirthdate").innerText = user.birthdate;
-            document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
-            document.getElementById("userAge").innerText = user.age;
-            document.getElementById("userPhone").innerText = user.phone;
-        }
-
-        function logout() {
-            localStorage.removeItem("user");
-            showSignup();
-        }
-
-        function showSignup() {
-            document.getElementById("signup").style.display = "block";
-            document.getElementById("login").style.display = "none";
-            document.getElementById("dashboard").style.display = "none";
-        }
-
-        function showLogin() {
-            document.getElementById("signup").style.display = "none";
-            document.getElementById("login").style.display = "block";
-            document.getElementById("dashboard").style.display = "none";
-        }
-
-        function downloadImage() {
-            let userCard = document.getElementById('userCard');
-            html2canvas(userCard).then(function(canvas) {
-                let link = document.createElement('a');
-                link.href = canvas.toDataURL('image/jpeg');
-                link.download = 'user-card.jpg';
-                link.click();
+        function downloadCard() {
+            const card = document.getElementById('idCard');
+            html2canvas(card).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+                pdf.addImage(imgData, 'PNG', 10, 10, 90, 55);
+                pdf.save("id_card.pdf");
             });
         }
     </script>
+
 </body>
 </html>
