@@ -67,7 +67,7 @@
             <input type="text" id="name" placeholder="نام">
             <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="text" id="birthdate" placeholder="تاریخ تولد (فرمت: yyyy/mm/dd)">
+            <input type="date" id="birthdate">
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="male"> مرد</label>
                 <label><input type="radio" name="gender" value="female"> زن</label>
@@ -103,15 +103,9 @@
 
     <script>
         function toJalali(dateString) {
-            const parts = dateString.split('/');
-            if (parts.length === 3) {
-                let year = parseInt(parts[0], 10);
-                let month = parseInt(parts[1], 10);
-                let day = parseInt(parts[2], 10);
-                let jalali = jalaali.toJalaali(year, month, day);
-                return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
-            }
-            return '';
+            let date = new Date(dateString);
+            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
         }
 
         function register() {
@@ -125,7 +119,7 @@
                 phone: document.getElementById("phone").value
             };
 
-            if (user.name && user.family && user.nationalCode && user.birthdate) {
+            if (user.name && user.family && user.nationalCode) {
                 localStorage.setItem("user", JSON.stringify(user));
                 alert("ثبت‌نام با موفقیت انجام شد!");
                 showLogin();
@@ -179,26 +173,19 @@
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
+            const font = "path_to_your_base64_encoded_font";  // Add your Base64 font string here
+            doc.addFileToVFS("Vazir-Regular.ttf", font); // This is the font you should use
+            doc.addFont("Vazir-Regular.ttf", "Vazir", "normal");
+            doc.setFont("Vazir");
 
-            doc.setFontSize(16);
             doc.text("اطلاعات کاربری", 10, 10);
-
-            // اضافه کردن عنوان‌ها به PDF
-            const titles = ["نام", "نام خانوادگی", "تاریخ تولد", "جنسیت", "سن", "شماره تماس"];
-            const userInfo = [
-                document.getElementById("userName").innerText,
-                document.getElementById("userFamily").innerText,
-                document.getElementById("userBirthdate").innerText,
-                document.getElementById("userGender").innerText,
-                document.getElementById("userAge").innerText,
-                document.getElementById("userPhone").innerText
-            ];
-
-            let yOffset = 20; // موقعیت اولیه y برای متن
-            for (let i = 0; i < titles.length; i++) {
-                doc.text(`${titles[i]}: ${userInfo[i]}`, 10, yOffset);
-                yOffset += 10;
-            }
+            doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
+            doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
+            doc.text(`کد ملی: ${document.getElementById("userNationalCode").innerText}`, 10, 40);
+            doc.text(`تاریخ تولد: ${document.getElementById("userBirthdate").innerText}`, 10, 50);
+            doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
+            doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
+            doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
 
             doc.save("UserInfo.pdf");
         }
