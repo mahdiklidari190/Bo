@@ -57,9 +57,10 @@
             align-items: center;
             gap: 5px;
         }
+
         .user-card {
             width: 350px;
-            height: 200px;
+            height: 250px;
             padding: 20px;
             background: #f0f0f0;
             border-radius: 15px;
@@ -67,7 +68,11 @@
             text-align: right;
             margin: 0 auto;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
         }
+
         .user-card img {
             width: 60px;
             height: 60px;
@@ -217,21 +222,14 @@
             document.getElementById("login").style.display = "block";
         }
 
-        function showSignup() {
-            document.getElementById("login").style.display = "none";
-            document.getElementById("signup").style.display = "block";
-        }
-
         function downloadImage() {
-            html2canvas(document.getElementById("userCard")).then(function(canvas) {
-                let imgData = canvas.toDataURL("image/jpeg");
-                let link = document.createElement('a');
-                link.href = imgData;
-                link.download = 'user_card.jpg';
+            html2canvas(document.getElementById("userCard")).then(canvas => {
+                let link = document.createElement("a");
+                link.download = "user_card.jpg";
+                link.href = canvas.toDataURL("image/jpeg");
                 link.click();
             });
         }
     </script>
-
 </body>
 </html>
