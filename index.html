@@ -1,120 +1,71 @@
+import os
+from flask import Flask, render_template_string, request, jsonify
+from transformers import pipeline
+
+app = Flask(__name__)
+
+# مدل چت‌بات
+chatbot = pipeline("conversational", model="microsoft/DialoGPT-small")
+
+# HTML و CSS و JavaScript به صورت یکجا در قالب رشته HTML
+html_code = """
 <!DOCTYPE html>
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل کاربری</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@0.4.1/dist/html2canvas.min.js"></script>
+    <title>چت‌بات BKBot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #28a745, #155724);
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        .form-container {
-            width: 300px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            margin: 20px auto;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 5px 0;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .logout-btn {
-            background-color: red;
-            color: white;
-        }
-
-        .download-btn {
-            background-color: blue;
-            color: white;
-        }
-
-        /* کارت شناسایی */
-        .card-container {
-            width: 220px;
-            height: 130px;
-            background: black;
-            color: white;
-            margin: 20px auto;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .card-info {
-            font-size: 14px;
-            margin-top: 5px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
+        #chatbox { width: 60%; margin: auto; padding: 10px; border: 1px solid #ddd; background: white; max-height: 300px; overflow-y: auto; }
+        .message { margin: 5px 0; padding: 8px; border-radius: 5px; }
+        .user { background-color: #007bff; color: white; text-align: left; }
+        .bot { background-color: #28a745; color: white; text-align: right; }
     </style>
 </head>
 <body>
-
-    <div class="form-container">
-        <h2>اطلاعات کاربری</h2>
-        <input type="text" id="name" placeholder="نام">
-        <input type="text" id="idNumber" placeholder="شماره شناسایی">
-        <button class="logout-btn">خروج</button>
-        <button class="download-btn" onclick="downloadCard()">دانلود کارت</button>
-    </div>
-
-    <div class="card-container" id="idCard">
-        <div class="card-title">کارت شناسایی</div>
-        <div class="card-info">نام: <span id="cardName">---</span></div>
-        <div class="card-info">شماره شناسایی: <span id="cardId">---</span></div>
-    </div>
+    <h2>چت‌بات BKBot</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="پیام خود را بنویسید..." />
+    <button onclick="sendMessage()">ارسال</button>
 
     <script>
-        function updateCard() {
-            document.getElementById('cardName').innerText = document.getElementById('name').value;
-            document.getElementById('cardId').innerText = document.getElementById('idNumber').value;
-        }
+        function sendMessage() {
+            let input = document.getElementById("userInput");
+            let message = input.value;
+            if (!message) return;
 
-        document.getElementById('name').addEventListener('input', updateCard);
-        document.getElementById('idNumber').addEventListener('input', updateCard);
+            let chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<div class='message user'>${message}</div>`;
 
-        function downloadCard() {
-            const card = document.getElementById('idCard');
-            html2canvas(card).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
-                pdf.addImage(imgData, 'PNG', 10, 10, 90, 55);
-                pdf.save("id_card.pdf");
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatbox.innerHTML += `<div class='message bot'>${data.response}</div>`;
+                input.value = "";
             });
         }
     </script>
-
 </body>
 </html>
+"""
+
+@app.route("/")
+def index():
+    return render_template_string(html_code)
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_input = request.json["message"]
+
+    # تولید پاسخ با استفاده از مدل چت‌بات
+    response = chatbot(user_input)[0]["generated_text"]
+    
+    return jsonify({"response": response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
