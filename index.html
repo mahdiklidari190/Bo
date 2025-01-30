@@ -8,6 +8,47 @@
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
         /* استایل‌ها */
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .gender-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .gender-container label {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -118,9 +159,13 @@
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
-            doc.setFont("Helvetica", "normal");
-            doc.setFontSize(12);
 
+            // تنظیم فونت فارسی
+            doc.addFileToVFS("Vazir-Regular.ttf", "Base64-encoded-Vazir-Regular-font-data");
+            doc.addFont("Vazir-Regular.ttf", "Vazir", "normal");
+            doc.setFont("Vazir");
+
+            doc.setFontSize(14);
             doc.text("اطلاعات کاربری", 10, 10);
             doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
             doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
@@ -129,7 +174,7 @@
             doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
             doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
             doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
-            
+
             doc.save("UserInfo.pdf");
         }
     </script>
