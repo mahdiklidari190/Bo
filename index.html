@@ -7,55 +7,81 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #28a745, #155724);
+            background: linear-gradient(120deg, #28a745, #155724);
             color: white;
             text-align: center;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
+
         .container {
-            width: 300px;
+            width: 320px;
             margin: 100px auto;
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
+            position: relative;
+            z-index: 10;
         }
-        input, select, button {
+
+        input, button {
             width: 100%;
+            height: 40px;
             margin: 5px 0;
             padding: 10px;
+            font-size: 16px;
             border: none;
             border-radius: 5px;
+            text-align: center;
         }
-        input, select {
-            background: #ddd;
+
+        input {
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease-in-out;
         }
+
+        input:focus {
+            background: white;
+            box-shadow: 0 0 8px #28a745;
+        }
+
         button {
-            background: #28a745;
+            background: linear-gradient(45deg, #28a745, #1e7e34);
             color: white;
             cursor: pointer;
+            transition: all 0.3s ease-in-out;
         }
+
         button:hover {
-            background: #218838;
+            background: linear-gradient(45deg, #1e7e34, #155724);
+            transform: scale(1.05);
         }
+
         a {
             color: #28a745;
             cursor: pointer;
+            transition: all 0.3s ease-in-out;
         }
+
         a:hover {
             color: #1e7e34;
+            transform: scale(1.1);
         }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .gender-container label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+
+        .leaf {
+            position: absolute;
+            top: -10vh;
+            font-size: 24px;
+            opacity: 0.8;
+            animation: fall linear infinite;
         }
     </style>
 </head>
@@ -64,16 +90,9 @@
     <div class="container">
         <div id="signup">
             <h2>ثبت‌نام</h2>
-            <input type="text" id="name" placeholder="نام">
-            <input type="text" id="family" placeholder="نام خانوادگی">
-            <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="date" id="birthdate">
-            <div class="gender-container">
-                <label><input type="radio" name="gender" value="male"> مرد</label>
-                <label><input type="radio" name="gender" value="female"> زن</label>
-            </div>
-            <input type="number" id="age" placeholder="سن">
-            <input type="text" id="phone" placeholder="شماره تماس">
+            <input type="text" id="name" placeholder="نام" oninput="validatePersian(this)">
+            <input type="text" id="family" placeholder="نام خانوادگی" oninput="validatePersian(this)">
+            <input type="text" id="birthdate" placeholder="تاریخ تولد (۱۴۰۲/۰۵/۱۰)">
             <button onclick="register()">ثبت‌نام</button>
             <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
@@ -82,7 +101,6 @@
             <h2>ورود</h2>
             <input type="text" id="loginName" placeholder="نام">
             <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-            <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <button onclick="login()">ورود</button>
             <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
         </div>
@@ -91,35 +109,25 @@
             <h2>پنل کاربری</h2>
             <p><strong>نام:</strong> <span id="userName"></span></p>
             <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
             <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-            <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-            <p><strong>سن:</strong> <span id="userAge"></span></p>
-            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
             <button onclick="downloadPDF()">دانلود PDF</button>
             <button onclick="logout()">خروج</button>
         </div>
     </div>
 
     <script>
-        function toJalali(dateString) {
-            let date = new Date(dateString);
-            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+        function validatePersian(input) {
+            input.value = input.value.replace(/[^آ-ی\s]/g, '');
         }
 
         function register() {
             let user = {
                 name: document.getElementById("name").value,
                 family: document.getElementById("family").value,
-                nationalCode: document.getElementById("nationalCode").value,
-                birthdate: toJalali(document.getElementById("birthdate").value),
-                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-                age: document.getElementById("age").value,
-                phone: document.getElementById("phone").value
+                birthdate: document.getElementById("birthdate").value
             };
 
-            if (user.name && user.family && user.nationalCode) {
+            if (user.name && user.family) {
                 localStorage.setItem("user", JSON.stringify(user));
                 alert("ثبت‌نام با موفقیت انجام شد!");
                 showLogin();
@@ -132,12 +140,11 @@
             let storedUser = JSON.parse(localStorage.getItem("user"));
             let loginName = document.getElementById("loginName").value;
             let loginFamily = document.getElementById("loginFamily").value;
-            let loginNationalCode = document.getElementById("loginNationalCode").value;
 
-            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
+            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily) {
                 showDashboard(storedUser);
             } else {
-                alert("نام، نام خانوادگی یا کد ملی اشتباه است.");
+                alert("نام یا نام خانوادگی اشتباه است.");
             }
         }
 
@@ -148,11 +155,7 @@
 
             document.getElementById("userName").innerText = user.name;
             document.getElementById("userFamily").innerText = user.family;
-            document.getElementById("userNationalCode").innerText = user.nationalCode;
             document.getElementById("userBirthdate").innerText = user.birthdate;
-            document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
-            document.getElementById("userAge").innerText = user.age;
-            document.getElementById("userPhone").innerText = user.phone;
         }
 
         function logout() {
@@ -160,24 +163,33 @@
             document.getElementById("signup").style.display = "block";
         }
 
-        function showLogin() {
-            document.getElementById("signup").style.display = "none";
-            document.getElementById("login").style.display = "block";
-        }
-
-        function showSignup() {
-            document.getElementById("login").style.display = "none";
-            document.getElementById("signup").style.display = "block";
-        }
-
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             let doc = new jsPDF();
+            doc.setFont("helvetica");
+
             doc.text("اطلاعات کاربری", 10, 10);
             doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
             doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
-            doc.save("UserInfo.pdf");
+            doc.text(`تاریخ تولد: ${document.getElementById("userBirthdate").innerText}`, 10, 40);
+
+            doc.save("اطلاعات_کاربری.pdf");
         }
+
+        function createLeaves() {
+            const colors = ["🍂", "🍃", "🍁"];
+            for (let i = 0; i < 30; i++) {
+                let leaf = document.createElement("div");
+                leaf.classList.add("leaf");
+                leaf.innerHTML = colors[Math.floor(Math.random() * colors.length)];
+                leaf.style.left = Math.random() * 100 + "vw";
+                leaf.style.animationDuration = (Math.random() * 5 + 5) + "s";
+                leaf.style.fontSize = (Math.random() * 10 + 20) + "px";
+                document.body.appendChild(leaf);
+            }
+        }
+        
+        createLeaves();
     </script>
 
 </body>
