@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ثبت‌نام | ورود | پنل کاربری</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@0.4.1/dist/html2canvas.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,6 +57,18 @@
             align-items: center;
             gap: 5px;
         }
+        .user-card {
+            width: 300px;
+            height: 400px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            text-align: right;
+            margin: 0 auto;
+        }
+        .user-card p {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -89,14 +101,16 @@
 
         <div id="dashboard" style="display: none;">
             <h2>پنل کاربری</h2>
-            <p><strong>نام:</strong> <span id="userName"></span></p>
-            <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-            <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-            <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-            <p><strong>سن:</strong> <span id="userAge"></span></p>
-            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
-            <button onclick="downloadPDF()">دانلود PDF</button>
+            <div id="userCard" class="user-card">
+                <p><strong>نام:</strong> <span id="userName"></span></p>
+                <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
+                <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
+                <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
+                <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
+                <p><strong>سن:</strong> <span id="userAge"></span></p>
+                <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+            </div>
+            <button onclick="downloadImage()">دانلود کارت</button>
             <button onclick="logout()">خروج</button>
         </div>
     </div>
@@ -170,24 +184,14 @@
             document.getElementById("signup").style.display = "block";
         }
 
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            let doc = new jsPDF();
-            const font = "path_to_your_base64_encoded_font";  // Add your Base64 font string here
-            doc.addFileToVFS("Vazir-Regular.ttf", font); // This is the font you should use
-            doc.addFont("Vazir-Regular.ttf", "Vazir", "normal");
-            doc.setFont("Vazir");
-
-            doc.text("اطلاعات کاربری", 10, 10);
-            doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
-            doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
-            doc.text(`کد ملی: ${document.getElementById("userNationalCode").innerText}`, 10, 40);
-            doc.text(`تاریخ تولد: ${document.getElementById("userBirthdate").innerText}`, 10, 50);
-            doc.text(`جنسیت: ${document.getElementById("userGender").innerText}`, 10, 60);
-            doc.text(`سن: ${document.getElementById("userAge").innerText}`, 10, 70);
-            doc.text(`شماره تماس: ${document.getElementById("userPhone").innerText}`, 10, 80);
-
-            doc.save("UserInfo.pdf");
+        function downloadImage() {
+            html2canvas(document.getElementById("userCard")).then(function(canvas) {
+                let imgData = canvas.toDataURL("image/jpeg");
+                let link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'user_card.jpg';
+                link.click();
+            });
         }
     </script>
 
