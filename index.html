@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="fa">
+<!DOCTYPE html><html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +20,7 @@
         }
         .container {
             width: 100%;
-            max-width: 350px;
+            max-width: 300px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
@@ -55,24 +54,18 @@
         a:hover {
             color: #1e7e34;
         }
+        .gender-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gender-container label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .error {
             color: red;
-        }
-        .id-card {
-            background: white;
-            color: black;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .id-card img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 2px solid #333;
         }
     </style>
 </head>
@@ -84,107 +77,118 @@
             <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
             <input type="text" id="birthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۲۳)">
+            <div class="gender-container">
+                <label><input type="radio" name="gender" value="male"> مرد</label>
+                <label><input type="radio" name="gender" value="female"> زن</label>
+            </div>
             <input type="number" id="age" placeholder="سن">
             <input type="text" id="phone" placeholder="شماره تماس">
-            <label>آپلود عکس:</label>
-            <input type="file" id="profilePicture" accept="image/*">
             <p class="error" id="signupError"></p>
             <button onclick="register()">ثبت‌نام</button>
             <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-        </div>
-
-        <div id="login" style="display: none;">
-            <h2>ورود</h2>
-            <input type="text" id="loginName" placeholder="نام">
-            <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-            <input type="text" id="loginNationalCode" placeholder="کد ملی">
-            <p class="error" id="loginError"></p>
-            <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
-        </div>
-
-        <div id="dashboard" style="display: none;">
-            <h2>پنل کاربری</h2>
-            <p><strong>نام:</strong> <span id="userName"></span></p>
-            <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-            <p><strong>سن:</strong> <span id="userAge"></span></p>
-            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
-            <button onclick="showIdCard()">مشاهده کارت شناسایی</button>
-            <button onclick="logout()">خروج</button>
-        </div>
-
-        <div id="idCard" style="display: none;">
-            <h2>کارت شناسایی</h2>
-            <div class="id-card">
-                <img id="idPhoto" src="" alt="عکس کاربر">
-                <p><strong>نام:</strong> <span id="idName"></span></p>
-                <p><strong>نام خانوادگی:</strong> <span id="idFamily"></span></p>
-                <p><strong>کد ملی:</strong> <span id="idNationalCode"></span></p>
-                <button onclick="downloadIdCard()">دانلود PDF</button>
-            </div>
-            <button onclick="hideIdCard()">بازگشت</button>
-        </div>
+        </div><div id="login" style="display: none;">
+        <h2>ورود</h2>
+        <input type="text" id="loginName" placeholder="نام">
+        <input type="text" id="loginFamily" placeholder="نام خانوادگی">
+        <input type="text" id="loginNationalCode" placeholder="کد ملی">
+        <p class="error" id="loginError"></p>
+        <button onclick="login()">ورود</button>
+        <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
     </div>
 
+    <div id="dashboard" style="display: none;">
+        <h2>پنل کاربری</h2>
+        <p><strong>نام:</strong> <span id="userName"></span></p>
+        <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
+        <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
+        <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
+        <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
+        <p><strong>سن:</strong> <span id="userAge"></span></p>
+        <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+        <button onclick="downloadPDF()">دانلود PDF</button>
+        <button onclick="logout()">خروج</button>
+    </div>
+</div>
+
 <script>
+    function toJalali(dateString) {
+        let date = new Date(dateString);
+        let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+        return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+    }
+
     function register() {
-        let reader = new FileReader();
-        let file = document.getElementById("profilePicture").files[0];
+        let user = {
+            name: document.getElementById("name").value,
+            family: document.getElementById("family").value,
+            nationalCode: document.getElementById("nationalCode").value,
+            birthdate: toJalali(document.getElementById("birthdate").value),
+            gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+            age: document.getElementById("age").value,
+            phone: document.getElementById("phone").value
+        };
 
-        reader.onloadend = function () {
-            let user = {
-                name: document.getElementById("name").value,
-                family: document.getElementById("family").value,
-                nationalCode: document.getElementById("nationalCode").value,
-                age: document.getElementById("age").value,
-                phone: document.getElementById("phone").value,
-                photo: reader.result || ""
-            };
-
+        if (user.name && user.family && user.nationalCode && user.birthdate && user.gender && user.age && user.phone) {
             localStorage.setItem("user", JSON.stringify(user));
             alert("ثبت‌نام با موفقیت انجام شد!");
             showLogin();
-        };
-
-        if (file) reader.readAsDataURL(file);
-        else reader.onloadend();
+        } else {
+            document.getElementById("signupError").innerText = "لطفاً تمام فیلدها را پر کنید.";
+        }
     }
 
     function login() {
         let storedUser = JSON.parse(localStorage.getItem("user"));
-        if (!storedUser) return alert("کاربری یافت نشد!");
+        let loginName = document.getElementById("loginName").value;
+        let loginFamily = document.getElementById("loginFamily").value;
+        let loginNationalCode = document.getElementById("loginNationalCode").value;
 
-        document.getElementById("userName").innerText = storedUser.name;
-        document.getElementById("userFamily").innerText = storedUser.family;
-        document.getElementById("userNationalCode").innerText = storedUser.nationalCode;
-        document.getElementById("userAge").innerText = storedUser.age;
-        document.getElementById("userPhone").innerText = storedUser.phone;
-
-        showDashboard();
+        if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
+            showDashboard(storedUser);
+        } else {
+            document.getElementById("loginError").innerText = "نام، نام خانوادگی یا کد ملی اشتباه است.";
+        }
     }
 
-    function showDashboard() {
+    function showDashboard(user) {
         document.getElementById("signup").style.display = "none";
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
+
+        document.getElementById("userName").innerText = user.name;
+        document.getElementById("userFamily").innerText = user.family;
+        document.getElementById("userNationalCode").innerText = user.nationalCode;
+        document.getElementById("userBirthdate").innerText = user.birthdate;
+        document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
+        document.getElementById("userAge").innerText = user.age;
+        document.getElementById("userPhone").innerText = user.phone;
     }
 
-    function showIdCard() {
-        let user = JSON.parse(localStorage.getItem("user"));
-        document.getElementById("idName").innerText = user.name;
-        document.getElementById("idFamily").innerText = user.family;
-        document.getElementById("idNationalCode").innerText = user.nationalCode;
-        document.getElementById("idPhoto").src = user.photo;
-        document.getElementById("idCard").style.display = "block";
+    function logout() {
         document.getElementById("dashboard").style.display = "none";
+        document.getElementById("signup").style.display = "block";
     }
 
-    function hideIdCard() {
-        document.getElementById("idCard").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
+    function showLogin() {
+        document.getElementById("signup").style.display = "none";
+        document.getElementById("login").style.display = "block";
+    }
+
+    function showSignup() {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("signup").style.display = "block";
+    }
+
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+        doc.text("اطلاعات کاربری", 10, 10);
+        doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
+        doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
+        doc.save("UserInfo.pdf");
     }
 </script>
 
 </body>
 </html>
+
