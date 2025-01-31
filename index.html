@@ -30,7 +30,7 @@
             flex-direction: column;
             align-items: center;
         }
-        input, select, button {
+        input, select, button, textarea {
             width: 80%;
             margin: 10px 0;
             padding: 10px;
@@ -38,17 +38,40 @@
             border-radius: 5px;
             text-align: center;
         }
+        input, select, textarea {
+            background: #fff;
+        }
         button {
             background: #28a745;
             color: white;
             cursor: pointer;
         }
-        button:hover { background: #218838; }
-        a { color: #28a745; cursor: pointer; }
-        a:hover { color: #1e7e34; }
-        .gender-container { display: flex; justify-content: center; gap: 10px; }
-        .error { color: red; }
-        .success { color: #28a745; }
+        button:hover {
+            background: #218838;
+        }
+        a {
+            color: #28a745;
+            cursor: pointer;
+        }
+        a:hover {
+            color: #1e7e34;
+        }
+        .gender-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gender-container label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: #28a745;
+        }
         .id-card {
             width: 300px;
             padding: 20px;
@@ -58,6 +81,21 @@
             color: #333;
             text-align: right;
             margin: 20px 0;
+        }
+        .id-card h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #28a745;
+        }
+        .id-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .id-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -73,14 +111,14 @@
                 <label><input type="radio" name="gender" value="male"> مرد</label>
                 <label><input type="radio" name="gender" value="female"> زن</label>
             </div>
-            <input type="number" id="age" placeholder="سن">
-            <input type="text" id="phone" placeholder="شماره تماس">
+            <input type="text" id="education" placeholder="تحصیلات">
+            <textarea id="address" placeholder="آدرس محل زندگی"></textarea>
+            <input type="file" id="profileImage" accept="image/*">
             <p class="error" id="signupError"></p>
             <p class="success" id="signupSuccess"></p>
             <button onclick="register()">ثبت‌نام</button>
-            <p>حساب کاربری دارید؟ <a onclick="showLogin()">ورود</a></p>
+            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
-
         <div id="login" style="display: none;">
             <h2>ورود</h2>
             <input type="text" id="loginName" placeholder="نام">
@@ -88,20 +126,21 @@
             <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <p class="error" id="loginError"></p>
             <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a onclick="showSignup()">ثبت‌نام</a></p>
+            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
         </div>
 
         <div id="dashboard" style="display: none;">
             <h2>پنل کاربری</h2>
             <div id="idCard" class="id-card">
                 <h3>کارت شناسایی</h3>
+                <img id="userProfileImage" src="" alt="عکس پرسنلی">
                 <p><strong>نام:</strong> <span id="userName"></span></p>
                 <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
                 <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
                 <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
                 <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-                <p><strong>سن:</strong> <span id="userAge"></span></p>
-                <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+                <p><strong>تحصیلات:</strong> <span id="userEducation"></span></p>
+                <p><strong>آدرس:</strong> <span id="userAddress"></span></p>
             </div>
             <button onclick="downloadIDCard()">دانلود کارت شناسایی</button>
             <button onclick="logout()">خروج</button>
@@ -115,36 +154,113 @@
             return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
         }
 
+        function validateNationalCode(nationalCode) {
+            return /^\d{10}$/.test(nationalCode);
+        }
+
+        function validateBirthdate(birthdate) {
+            return /^\d{4}\/\d{2}\/\d{2}$/.test(birthdate);
+        }
+
+        function showError(elementId, message) {
+            document.getElementById(elementId).innerText = message;
+        }
+
+        function clearError(elementId) {
+            document.getElementById(elementId).innerText = "";
+        }
+
         function register() {
             let name = document.getElementById("name").value.trim();
             let family = document.getElementById("family").value.trim();
             let nationalCode = document.getElementById("nationalCode").value.trim();
             let birthdate = document.getElementById("birthdate").value.trim();
             let gender = document.querySelector('input[name="gender"]:checked')?.value || '';
-            let age = document.getElementById("age").value.trim();
-            let phone = document.getElementById("phone").value.trim();
+            let education = document.getElementById("education").value.trim();
+            let address = document.getElementById("address").value.trim();
+            let profileImage = document.getElementById("profileImage").files[0];
 
-            if (!name || !family || !nationalCode || !birthdate || !gender || !age || !phone) {
-                document.getElementById("signupError").innerText = "لطفاً تمام اطلاعات را وارد کنید.";
+            clearError("signupError");
+            clearError("signupSuccess");
+
+            if (!name) {
+                showError("signupError", "لطفاً نام را وارد کنید.");
+                document.getElementById("name").focus();
+                return;
+            }
+            if (!family) {
+                showError("signupError", "لطفاً نام خانوادگی را وارد کنید.");
+                document.getElementById("family").focus();
+                return;
+            }
+            if (!validateNationalCode(nationalCode)) {
+                showError("signupError", "کد ملی باید 10 رقمی باشد.");
+                document.getElementById("nationalCode").focus();
+                return;
+            }
+            if (!validateBirthdate(birthdate)) {
+                showError("signupError", "تاریخ تولد باید به فرمت شمسی باشد (مثال: ۱۳۸۰/۰۵/۲۳).");
+                document.getElementById("birthdate").focus();
+                return;
+            }
+            if (!gender) {
+                showError("signupError", "لطفاً جنسیت را انتخاب کنید.");
+                return;
+            }
+            if (!education) {
+                showError("signupError", "لطفاً تحصیلات را وارد کنید.");
+                document.getElementById("education").focus();
+                return;
+            }
+            if (!address) {
+                showError("signupError", "لطفاً آدرس را وارد کنید.");
+                document.getElementById("address").focus();
+                return;
+            }
+            if (!profileImage) {
+                showError("signupError", "لطفاً عکس پرسنلی را آپلود کنید.");
                 return;
             }
 
-            let user = { name, family, nationalCode, birthdate: toJalali(birthdate), gender, age, phone };
-            localStorage.setItem("user", JSON.stringify(user));
-            document.getElementById("signupSuccess").innerText = "ثبت‌نام موفقیت‌آمیز بود!";
-            setTimeout(() => showLogin(), 2000);
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let user = {
+                    name: name,
+                    family: family,
+                    nationalCode: nationalCode,
+                    birthdate: birthdate,
+                    gender: gender,
+                    education: education,
+                    address: address,
+                    profileImage: e.target.result
+                };
+
+                let users = JSON.parse(localStorage.getItem("users")) || [];
+                users.push(user);
+                localStorage.setItem("users", JSON.stringify(users));
+
+                document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
+                setTimeout(() => {
+                    showLogin();
+                }, 2000);
+            };
+            reader.readAsDataURL(profileImage);
         }
 
         function login() {
-            let storedUser = JSON.parse(localStorage.getItem("user"));
-            let loginName = document.getElementById("loginName").value;
-            let loginFamily = document.getElementById("loginFamily").value;
-            let loginNationalCode = document.getElementById("loginNationalCode").value;
+            let loginName = document.getElementById("loginName").value.trim();
+            let loginFamily = document.getElementById("loginFamily").value.trim();
+            let loginNationalCode = document.getElementById("loginNationalCode").value.trim();
 
-            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
-                showDashboard(storedUser);
+            clearError("loginError");
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let user = users.find(u => u.name === loginName && u.family === loginFamily && u.nationalCode === loginNationalCode);
+
+            if (user) {
+                showDashboard(user);
             } else {
-                document.getElementById("loginError").innerText = "اطلاعات وارد شده صحیح نیست.";
+                showError("loginError", "نام، نام خانوادگی یا کد ملی اشتباه است.");
             }
         }
 
@@ -158,8 +274,9 @@
             document.getElementById("userNationalCode").innerText = user.nationalCode;
             document.getElementById("userBirthdate").innerText = user.birthdate;
             document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
-            document.getElementById("userAge").innerText = user.age;
-            document.getElementById("userPhone").innerText = user.phone;
+            document.getElementById("userEducation").innerText = user.education;
+            document.getElementById("userAddress").innerText = user.address;
+            document.getElementById("userProfileImage").src = user.profileImage;
         }
 
         function logout() {
@@ -167,11 +284,21 @@
             document.getElementById("signup").style.display = "block";
         }
 
+        function showLogin() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "block";
+        }
+
+        function showSignup() {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("signup").style.display = "block";
+        }
+
         function downloadIDCard() {
             html2canvas(document.getElementById("idCard")).then(canvas => {
                 let link = document.createElement("a");
-                link.download = "کارت.png";
-                link.href = canvas.toDataURL();
+                link.download = "کارت شناسایی.png";
+                link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         }
