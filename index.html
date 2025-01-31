@@ -38,41 +38,17 @@
             border-radius: 5px;
             text-align: center;
         }
-        input, select {
-            background: #fff;
-        }
         button {
             background: #28a745;
             color: white;
             cursor: pointer;
         }
-        button:hover {
-            background: #218838;
-        }
-        a {
-            color: #28a745;
-            cursor: pointer;
-        }
-        a:hover {
-            color: #1e7e34;
-        }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .gender-container label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .error {
-            color: red;
-        }
-        .success {
-            color: #28a745;
-        }
-        /* استایل کارت شناسایی */
+        button:hover { background: #218838; }
+        a { color: #28a745; cursor: pointer; }
+        a:hover { color: #1e7e34; }
+        .gender-container { display: flex; justify-content: center; gap: 10px; }
+        .error { color: red; }
+        .success { color: #28a745; }
         .id-card {
             width: 300px;
             padding: 20px;
@@ -82,15 +58,6 @@
             color: #333;
             text-align: right;
             margin: 20px 0;
-        }
-        .id-card h3 {
-            margin: 0 0 10px;
-            font-size: 18px;
-            color: #28a745;
-        }
-        .id-card p {
-            margin: 5px 0;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -111,8 +78,9 @@
             <p class="error" id="signupError"></p>
             <p class="success" id="signupSuccess"></p>
             <button onclick="register()">ثبت‌نام</button>
-            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
+            <p>حساب کاربری دارید؟ <a onclick="showLogin()">ورود</a></p>
         </div>
+
         <div id="login" style="display: none;">
             <h2>ورود</h2>
             <input type="text" id="loginName" placeholder="نام">
@@ -120,7 +88,7 @@
             <input type="text" id="loginNationalCode" placeholder="کد ملی">
             <p class="error" id="loginError"></p>
             <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+            <p>حساب ندارید؟ <a onclick="showSignup()">ثبت‌نام</a></p>
         </div>
 
         <div id="dashboard" style="display: none;">
@@ -156,56 +124,15 @@
             let age = document.getElementById("age").value.trim();
             let phone = document.getElementById("phone").value.trim();
 
-            let errorMessage = "";
-
-            if (!name) {
-                errorMessage = "لطفاً نام را وارد کنید.";
-                document.getElementById("name").focus();
-            } else if (!family) {
-                errorMessage = "لطفاً نام خانوادگی را وارد کنید.";
-                document.getElementById("family").focus();
-            } else if (!nationalCode) {
-                errorMessage = "لطفاً کد ملی را وارد کنید.";
-                document.getElementById("nationalCode").focus();
-            } else if (!birthdate) {
-                errorMessage = "لطفاً تاریخ تولد را وارد کنید.";
-                document.getElementById("birthdate").focus();
-            } else if (!gender) {
-                errorMessage = "لطفاً جنسیت را انتخاب کنید.";
-            } else if (!age) {
-                errorMessage = "لطفاً سن را وارد کنید.";
-                document.getElementById("age").focus();
-            } else if (!phone) {
-                errorMessage = "لطفاً شماره تماس را وارد کنید.";
-                document.getElementById("phone").focus();
-            }
-
-            if (errorMessage) {
-                document.getElementById("signupError").innerText = errorMessage;
-                document.getElementById("signupSuccess").innerText = ""; // پاک کردن پیام موفقیت
+            if (!name || !family || !nationalCode || !birthdate || !gender || !age || !phone) {
+                document.getElementById("signupError").innerText = "لطفاً تمام اطلاعات را وارد کنید.";
                 return;
             }
 
-            let user = {
-                name: name,
-                family: family,
-                nationalCode: nationalCode,
-                birthdate: toJalali(birthdate),
-                gender: gender,
-                age: age,
-                phone: phone
-            };
-
+            let user = { name, family, nationalCode, birthdate: toJalali(birthdate), gender, age, phone };
             localStorage.setItem("user", JSON.stringify(user));
-
-            // نمایش پیام موفقیت
-            document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
-            document.getElementById("signupError").innerText = ""; // پاک کردن پیام خطا
-
-            // هدایت به صفحه لاگین پس از 2 ثانیه
-            setTimeout(() => {
-                showLogin();
-            }, 2000);
+            document.getElementById("signupSuccess").innerText = "ثبت‌نام موفقیت‌آمیز بود!";
+            setTimeout(() => showLogin(), 2000);
         }
 
         function login() {
@@ -217,7 +144,7 @@
             if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
                 showDashboard(storedUser);
             } else {
-                document.getElementById("loginError").innerText = "نام، نام خانوادگی یا کد ملی اشتباه است.";
+                document.getElementById("loginError").innerText = "اطلاعات وارد شده صحیح نیست.";
             }
         }
 
@@ -240,21 +167,11 @@
             document.getElementById("signup").style.display = "block";
         }
 
-        function showLogin() {
-            document.getElementById("signup").style.display = "none";
-            document.getElementById("login").style.display = "block";
-        }
-
-        function showSignup() {
-            document.getElementById("login").style.display = "none";
-            document.getElementById("signup").style.display = "block";
-        }
-
         function downloadIDCard() {
             html2canvas(document.getElementById("idCard")).then(canvas => {
                 let link = document.createElement("a");
-                link.download = "کارت شناسایی.png";
-                link.href = canvas.toDataURL("image/png");
+                link.download = "کارت.png";
+                link.href = canvas.toDataURL();
                 link.click();
             });
         }
