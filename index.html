@@ -8,12 +8,66 @@
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* استایل‌ها همان‌طور که هستند باقی می‌مانند */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            direction: rtl;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            display: none;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- فرم‌ها و المان‌های HTML همان‌طور که هستند باقی می‌مانند -->
+    <div class="container" id="signup">
+        <h2>ثبت‌نام</h2>
+        <input type="text" id="name" placeholder="نام">
+        <input type="text" id="family" placeholder="نام خانوادگی">
+        <input type="text" id="nationalCode" placeholder="کد ملی">
+        <input type="date" id="birthdate">
+        <input type="text" id="education" placeholder="تحصیلات">
+        <input type="text" id="address" placeholder="آدرس">
+        <input type="file" id="profileImage">
+        <img id="profilePreview">
+        <button onclick="register()">ثبت‌نام</button>
+        <p id="signupSuccess" style="color: green;"></p>
+        <button onclick="showLogin()">رفتن به صفحه ورود</button>
+    </div>
+
+    <div class="container" id="login" style="display: none;">
+        <h2>ورود</h2>
+        <input type="text" id="loginNationalCode" placeholder="کد ملی">
+        <button onclick="login()">ورود</button>
+        <p id="loginError" style="color: red;"></p>
+        <button onclick="showSignup()">رفتن به صفحه ثبت‌نام</button>
+    </div>
+
+    <div class="container" id="dashboard" style="display: none;">
+        <h2>داشبورد</h2>
+        <p>نام: <span id="userName"></span></p>
+        <p>نام خانوادگی: <span id="userFamily"></span></p>
+        <p>کد ملی: <span id="userNationalCode"></span></p>
+        <p>تاریخ تولد: <span id="userBirthdate"></span></p>
+        <p>تحصیلات: <span id="userEducation"></span></p>
+        <p>آدرس: <span id="userAddress"></span></p>
+        <img id="userProfileImage">
+        <button onclick="logout()">خروج</button>
     </div>
 
     <script>
@@ -22,11 +76,6 @@
         const storeName = "Users";
         let currentUser = null;
 
-        // توکن و شناسه گروه تلگرام
-        const botToken = "7546571600:AAHU8BKI4svtt5icjOFZJbKVMt_232n1s7Q";
-        const chatId = "-4755536198";
-
-        // Initialize IndexedDB
         function initDB() {
             const request = indexedDB.open(dbName, 1);
             request.onupgradeneeded = function (event) {
@@ -39,37 +88,26 @@
                 db = event.target.result;
             };
             request.onerror = function (event) {
-                console.error("Error opening DB:", event.target.error);
+                console.error("خطا در باز کردن پایگاه داده:", event.target.error);
             };
         }
 
-        // Save user to IndexedDB
         function saveUser(user) {
             const transaction = db.transaction([storeName], "readwrite");
             const store = transaction.objectStore(storeName);
-            const request = store.put(user);
-            request.onsuccess = function () {
-                console.log("User saved successfully.");
-            };
-            request.onerror = function (event) {
-                console.error("Error saving user:", event.target.error);
+            store.put(user).onsuccess = function () {
+                console.log("کاربر ذخیره شد.");
             };
         }
 
-        // Get user from IndexedDB
         function getUser(nationalCode, callback) {
             const transaction = db.transaction([storeName], "readonly");
             const store = transaction.objectStore(storeName);
-            const request = store.get(nationalCode);
-            request.onsuccess = function (event) {
+            store.get(nationalCode).onsuccess = function (event) {
                 callback(event.target.result);
-            };
-            request.onerror = function (event) {
-                console.error("Error fetching user:", event.target.error);
             };
         }
 
-        // Preview profile image
         document.getElementById("profileImage").addEventListener("change", function (e) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -80,25 +118,12 @@
             reader.readAsDataURL(file);
         });
 
-        // Preview edit profile image
-        document.getElementById("editProfileImage").addEventListener("change", function (e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById("editProfilePreview").src = e.target.result;
-                document.getElementById("editProfilePreview").style.display = "block";
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // Register function
         function register() {
             const user = {
                 name: document.getElementById("name").value.trim(),
                 family: document.getElementById("family").value.trim(),
                 nationalCode: document.getElementById("nationalCode").value.trim(),
                 birthdate: document.getElementById("birthdate").value.trim(),
-                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
                 education: document.getElementById("education").value.trim(),
                 address: document.getElementById("address").value.trim(),
                 profileImage: document.getElementById("profilePreview").src
@@ -106,40 +131,9 @@
 
             saveUser(user);
             document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
-
-            // ارسال اطلاعات به تلگرام
-            sendToTelegram(user);
-
             setTimeout(() => showLogin(), 2000);
         }
 
-        // ارسال اطلاعات به تلگرام
-        function sendToTelegram(user) {
-            const message = `ثبت‌نام جدید:\nنام: ${user.name}\nنام خانوادگی: ${user.family}\nکد ملی: ${user.nationalCode}\nتاریخ تولد: ${user.birthdate}\nجنسیت: ${user.gender === "male" ? "مرد" : "زن"}\nتحصیلات: ${user.education}\nآدرس: ${user.address}`;
-
-            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-            const data = {
-                chat_id: chatId,
-                text: message
-            };
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log('پیام با موفقیت ارسال شد:', result);
-            })
-            .catch(error => {
-                console.error('خطا در ارسال پیام:', error);
-            });
-        }
-
-        // Login function
         function login() {
             const nationalCode = document.getElementById("loginNationalCode").value.trim();
             getUser(nationalCode, function (user) {
@@ -152,87 +146,36 @@
             });
         }
 
-        // Show dashboard
         function showDashboard(user) {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "none";
-            document.getElementById("editProfile").style.display = "none";
             document.getElementById("dashboard").style.display = "block";
 
             document.getElementById("userName").innerText = user.name;
             document.getElementById("userFamily").innerText = user.family;
             document.getElementById("userNationalCode").innerText = user.nationalCode;
             document.getElementById("userBirthdate").innerText = user.birthdate;
-            document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
             document.getElementById("userEducation").innerText = user.education;
             document.getElementById("userAddress").innerText = user.address;
             document.getElementById("userProfileImage").src = user.profileImage;
         }
 
-        // Edit profile
-        function editProfile() {
-            document.getElementById("dashboard").style.display = "none";
-            document.getElementById("editProfile").style.display = "block";
-
-            document.getElementById("editName").value = currentUser.name;
-            document.getElementById("editFamily").value = currentUser.family;
-            document.getElementById("editNationalCode").value = currentUser.nationalCode;
-            document.getElementById("editBirthdate").value = currentUser.birthdate;
-            document.querySelector(`input[name="editGender"][value="${currentUser.gender}"]`).checked = true;
-            document.getElementById("editEducation").value = currentUser.education;
-            document.getElementById("editAddress").value = currentUser.address;
-            document.getElementById("editProfilePreview").src = currentUser.profileImage;
-            document.getElementById("editProfilePreview").style.display = "block";
-        }
-
-        // Save profile changes
-        function saveProfile() {
-            const user = {
-                name: document.getElementById("editName").value.trim(),
-                family: document.getElementById("editFamily").value.trim(),
-                nationalCode: document.getElementById("editNationalCode").value.trim(),
-                birthdate: document.getElementById("editBirthdate").value.trim(),
-                gender: document.querySelector('input[name="editGender"]:checked')?.value || '',
-                education: document.getElementById("editEducation").value.trim(),
-                address: document.getElementById("editAddress").value.trim(),
-                profileImage: document.getElementById("editProfilePreview").src
-            };
-
-            saveUser(user);
-            currentUser = user;
-            showDashboard(user);
-        }
-
-        // Logout
         function logout() {
             currentUser = null;
             document.getElementById("dashboard").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
 
-        // Show login
         function showLogin() {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "block";
         }
 
-        // Show signup
         function showSignup() {
             document.getElementById("login").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
 
-        // Download ID card
-        function downloadIDCard() {
-            html2canvas(document.getElementById("idCard")).then(canvas => {
-                const link = document.createElement("a");
-                link.download = "کارت شناسایی.png";
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
-
-        // Initialize DB on page load
         initDB();
     </script>
 </body>
