@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="fa">
+<!DOCTYPE html>
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ثبت‌نام | ورود | پنل کاربری</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,6 +69,26 @@
         .error {
             color: red;
         }
+        /* استایل کارت شناسایی */
+        .id-card {
+            width: 300px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: #333;
+            text-align: right;
+            margin: 20px 0;
+        }
+        .id-card h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #28a745;
+        }
+        .id-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -86,109 +108,144 @@
             <p class="error" id="signupError"></p>
             <button onclick="register()">ثبت‌نام</button>
             <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-        </div><div id="login" style="display: none;">
-        <h2>ورود</h2>
-        <input type="text" id="loginName" placeholder="نام">
-        <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-        <input type="text" id="loginNationalCode" placeholder="کد ملی">
-        <p class="error" id="loginError"></p>
-        <button onclick="login()">ورود</button>
-        <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+        </div>
+        <div id="login" style="display: none;">
+            <h2>ورود</h2>
+            <input type="text" id="loginName" placeholder="نام">
+            <input type="text" id="loginFamily" placeholder="نام خانوادگی">
+            <input type="text" id="loginNationalCode" placeholder="کد ملی">
+            <p class="error" id="loginError"></p>
+            <button onclick="login()">ورود</button>
+            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <h2>پنل کاربری</h2>
+            <div id="idCard" class="id-card">
+                <h3>کارت شناسایی</h3>
+                <p><strong>نام:</strong> <span id="userName"></span></p>
+                <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
+                <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
+                <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
+                <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
+                <p><strong>سن:</strong> <span id="userAge"></span></p>
+                <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+            </div>
+            <button onclick="downloadIDCard()">دانلود کارت شناسایی</button>
+            <button onclick="logout()">خروج</button>
+        </div>
     </div>
 
-    <div id="dashboard" style="display: none;">
-        <h2>پنل کاربری</h2>
-        <p><strong>نام:</strong> <span id="userName"></span></p>
-        <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-        <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-        <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-        <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-        <p><strong>سن:</strong> <span id="userAge"></span></p>
-        <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
-        <button onclick="downloadPDF()">دانلود PDF</button>
-        <button onclick="logout()">خروج</button>
-    </div>
-</div>
+    <script>
+        function toJalali(dateString) {
+            let date = new Date(dateString);
+            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
+        }
 
-<script>
-    function toJalali(dateString) {
-        let date = new Date(dateString);
-        let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-        return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
-    }
+        function register() {
+            let name = document.getElementById("name").value.trim();
+            let family = document.getElementById("family").value.trim();
+            let nationalCode = document.getElementById("nationalCode").value.trim();
+            let birthdate = document.getElementById("birthdate").value.trim();
+            let gender = document.querySelector('input[name="gender"]:checked')?.value || '';
+            let age = document.getElementById("age").value.trim();
+            let phone = document.getElementById("phone").value.trim();
 
-    function register() {
-        let user = {
-            name: document.getElementById("name").value,
-            family: document.getElementById("family").value,
-            nationalCode: document.getElementById("nationalCode").value,
-            birthdate: toJalali(document.getElementById("birthdate").value),
-            gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-            age: document.getElementById("age").value,
-            phone: document.getElementById("phone").value
-        };
+            let errorMessage = "";
 
-        if (user.name && user.family && user.nationalCode && user.birthdate && user.gender && user.age && user.phone) {
+            if (!name) {
+                errorMessage = "لطفاً نام را وارد کنید.";
+                document.getElementById("name").focus();
+            } else if (!family) {
+                errorMessage = "لطفاً نام خانوادگی را وارد کنید.";
+                document.getElementById("family").focus();
+            } else if (!nationalCode) {
+                errorMessage = "لطفاً کد ملی را وارد کنید.";
+                document.getElementById("nationalCode").focus();
+            } else if (!birthdate) {
+                errorMessage = "لطفاً تاریخ تولد را وارد کنید.";
+                document.getElementById("birthdate").focus();
+            } else if (!gender) {
+                errorMessage = "لطفاً جنسیت را انتخاب کنید.";
+            } else if (!age) {
+                errorMessage = "لطفاً سن را وارد کنید.";
+                document.getElementById("age").focus();
+            } else if (!phone) {
+                errorMessage = "لطفاً شماره تماس را وارد کنید.";
+                document.getElementById("phone").focus();
+            }
+
+            if (errorMessage) {
+                document.getElementById("signupError").innerText = errorMessage;
+                return;
+            }
+
+            let user = {
+                name: name,
+                family: family,
+                nationalCode: nationalCode,
+                birthdate: toJalali(birthdate),
+                gender: gender,
+                age: age,
+                phone: phone
+            };
+
             localStorage.setItem("user", JSON.stringify(user));
             alert("ثبت‌نام با موفقیت انجام شد!");
             showLogin();
-        } else {
-            document.getElementById("signupError").innerText = "لطفاً تمام فیلدها را پر کنید.";
         }
-    }
 
-    function login() {
-        let storedUser = JSON.parse(localStorage.getItem("user"));
-        let loginName = document.getElementById("loginName").value;
-        let loginFamily = document.getElementById("loginFamily").value;
-        let loginNationalCode = document.getElementById("loginNationalCode").value;
+        function login() {
+            let storedUser = JSON.parse(localStorage.getItem("user"));
+            let loginName = document.getElementById("loginName").value;
+            let loginFamily = document.getElementById("loginFamily").value;
+            let loginNationalCode = document.getElementById("loginNationalCode").value;
 
-        if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
-            showDashboard(storedUser);
-        } else {
-            document.getElementById("loginError").innerText = "نام، نام خانوادگی یا کد ملی اشتباه است.";
+            if (storedUser && storedUser.name === loginName && storedUser.family === loginFamily && storedUser.nationalCode === loginNationalCode) {
+                showDashboard(storedUser);
+            } else {
+                document.getElementById("loginError").innerText = "نام، نام خانوادگی یا کد ملی اشتباه است.";
+            }
         }
-    }
 
-    function showDashboard(user) {
-        document.getElementById("signup").style.display = "none";
-        document.getElementById("login").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
+        function showDashboard(user) {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
 
-        document.getElementById("userName").innerText = user.name;
-        document.getElementById("userFamily").innerText = user.family;
-        document.getElementById("userNationalCode").innerText = user.nationalCode;
-        document.getElementById("userBirthdate").innerText = user.birthdate;
-        document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
-        document.getElementById("userAge").innerText = user.age;
-        document.getElementById("userPhone").innerText = user.phone;
-    }
+            document.getElementById("userName").innerText = user.name;
+            document.getElementById("userFamily").innerText = user.family;
+            document.getElementById("userNationalCode").innerText = user.nationalCode;
+            document.getElementById("userBirthdate").innerText = user.birthdate;
+            document.getElementById("userGender").innerText = user.gender === "male" ? "مرد" : "زن";
+            document.getElementById("userAge").innerText = user.age;
+            document.getElementById("userPhone").innerText = user.phone;
+        }
 
-    function logout() {
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("signup").style.display = "block";
-    }
+        function logout() {
+            document.getElementById("dashboard").style.display = "none";
+            document.getElementById("signup").style.display = "block";
+        }
 
-    function showLogin() {
-        document.getElementById("signup").style.display = "none";
-        document.getElementById("login").style.display = "block";
-    }
+        function showLogin() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "block";
+        }
 
-    function showSignup() {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("signup").style.display = "block";
-    }
+        function showSignup() {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("signup").style.display = "block";
+        }
 
-    function downloadPDF() {
-        const { jsPDF } = window.jspdf;
-        let doc = new jsPDF();
-        doc.text("اطلاعات کاربری", 10, 10);
-        doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
-        doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
-        doc.save("UserInfo.pdf");
-    }
-</script>
-
+        function downloadIDCard() {
+            html2canvas(document.getElementById("idCard")).then(canvas => {
+                let link = document.createElement("a");
+                link.download = "کارت شناسایی.png";
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+    </script>
 </body>
 </html>
-
