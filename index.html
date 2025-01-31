@@ -16,18 +16,22 @@
             padding: 0;
         }
         .container {
-            width: 300px;
+            width: 350px;
             margin: 100px auto;
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         input, select, button {
-            width: 100%;
+            width: 90%;
             margin: 5px 0;
             padding: 10px;
             border: none;
             border-radius: 5px;
+            display: block;
         }
         input, select {
             background: #ddd;
@@ -50,12 +54,18 @@
         .gender-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 20px;
+            width: 100%;
+            margin: 10px 0;
         }
         .gender-container label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
+            font-size: 18px;
+        }
+        .gender-container input {
+            transform: scale(1.5);
         }
         .error {
             color: red;
@@ -70,7 +80,7 @@
             <input type="text" id="name" placeholder="نام">
             <input type="text" id="family" placeholder="نام خانوادگی">
             <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="date" id="birthdate">
+            <input type="text" id="birthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۱۲)">
             <div class="gender-container">
                 <label><input type="radio" name="gender" value="male"> مرد</label>
                 <label><input type="radio" name="gender" value="female"> زن</label>
@@ -107,18 +117,12 @@
     </div>
 
     <script>
-        function toJalali(dateString) {
-            let date = new Date(dateString);
-            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
-        }
-
         function register() {
             let user = {
                 name: document.getElementById("name").value,
                 family: document.getElementById("family").value,
                 nationalCode: document.getElementById("nationalCode").value,
-                birthdate: toJalali(document.getElementById("birthdate").value),
+                birthdate: document.getElementById("birthdate").value,
                 gender: document.querySelector('input[name="gender"]:checked')?.value || '',
                 age: document.getElementById("age").value,
                 phone: document.getElementById("phone").value
@@ -173,15 +177,6 @@
         function showSignup() {
             document.getElementById("login").style.display = "none";
             document.getElementById("signup").style.display = "block";
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            let doc = new jsPDF();
-            doc.text("اطلاعات کاربری", 10, 10);
-            doc.text(`نام: ${document.getElementById("userName").innerText}`, 10, 20);
-            doc.text(`نام خانوادگی: ${document.getElementById("userFamily").innerText}`, 10, 30);
-            doc.save("UserInfo.pdf");
         }
     </script>
 
