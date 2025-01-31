@@ -3,149 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثبت‌نام | ورود | پنل کاربری</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+    <title>ثبت‌نام و ورود</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #28a745, #155724);
-            color: white;
             text-align: center;
-            margin: 0;
-            padding: 0;
+            background-color: #121212;
+            color: white;
         }
+
         .container {
-            width: 80%;
-            max-width: 400px;
-            margin: 100px auto;
+            width: 300px;
+            margin: auto;
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
-        input, select, button {
+
+        input, button {
+            display: block;
             width: 90%;
-            margin: 5px 0;
             padding: 10px;
-            border: none;
+            margin: 10px auto;
             border-radius: 5px;
+            border: 1px solid #444;
         }
-        input, select {
-            background: #ddd;
-            color: black;
-        }
+
         button {
-            background: #28a745;
+            background: #00adb5;
             color: white;
             cursor: pointer;
         }
+
         button:hover {
-            background: #218838;
+            background: #008c9e;
         }
-        a {
-            color: #28a745;
-            cursor: pointer;
-        }
-        a:hover {
-            color: #1e7e34;
-        }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 10px 0;
-        }
-        .gender-container label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2em;
-        }
+
         .error {
             color: red;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="signup">
-            <h2>ثبت‌نام</h2>
-            <input type="text" id="name" placeholder="نام">
-            <input type="text" id="family" placeholder="نام خانوادگی">
-            <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="text" id="birthdate" placeholder="تاریخ تولد (مثال: 1370/01/15)">
-            <div class="gender-container">
-                <label><input type="radio" name="gender" value="male"> مرد</label>
-                <label><input type="radio" name="gender" value="female"> زن</label>
-            </div>
-            <input type="number" id="age" placeholder="سن">
-            <input type="text" id="phone" placeholder="شماره تماس">
-            <p class="error" id="signupError"></p>
-            <button onclick="register()">ثبت‌نام</button>
-            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-        </div>
+    <!-- فرم ثبت‌نام -->
+    <div id="signup" class="container">
+        <h2>ثبت‌نام</h2>
+        <input type="text" id="name" placeholder="نام">
+        <input type="text" id="family" placeholder="نام خانوادگی">
+        <input type="text" id="nationalCode" placeholder="کد ملی">
+        <input type="date" id="birthdate">
+        <label>جنسیت:</label>
+        <input type="radio" name="gender" value="مرد"> مرد
+        <input type="radio" name="gender" value="زن"> زن
+        <input type="number" id="age" placeholder="سن">
+        <input type="text" id="phone" placeholder="شماره تلفن">
+        <p id="signupError" class="error"></p>
+        <button onclick="register()">ثبت‌نام</button>
+        <button onclick="showLogin()">ورود</button>
+    </div>
 
-        <div id="login" style="display: none;">
-            <h2>ورود</h2>
-            <input type="text" id="loginName" placeholder="نام">
-            <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-            <input type="text" id="loginNationalCode" placeholder="کد ملی">
-            <p class="error" id="loginError"></p>
-            <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
-        </div>
+    <!-- فرم ورود -->
+    <div id="login" class="container" style="display: none;">
+        <h2>ورود</h2>
+        <input type="text" id="loginName" placeholder="نام">
+        <input type="text" id="loginFamily" placeholder="نام خانوادگی">
+        <input type="text" id="loginNationalCode" placeholder="کد ملی">
+        <p id="loginError" class="error"></p>
+        <button onclick="login()">ورود</button>
+        <button onclick="showSignup()">ثبت‌نام</button>
+    </div>
 
-        <div id="dashboard" style="display: none;">
-            <h2>پنل کاربری</h2>
-            <p><strong>نام:</strong> <span id="userName"></span></p>
-            <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-            <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-            <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-            <p><strong>سن:</strong> <span id="userAge"></span></p>
-            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
-            <button onclick="downloadPDF()">دانلود PDF</button>
-            <button onclick="logout()">خروج</button>
-        </div>
+    <!-- داشبورد کاربر -->
+    <div id="dashboard" class="container" style="display: none;">
+        <h2>داشبورد</h2>
+        <p>نام: <span id="userName"></span></p>
+        <p>نام خانوادگی: <span id="userFamily"></span></p>
+        <p>کد ملی: <span id="userNationalCode"></span></p>
+        <p>تاریخ تولد: <span id="userBirthdate"></span></p>
+        <p>جنسیت: <span id="userGender"></span></p>
+        <p>سن: <span id="userAge"></span></p>
+        <p>شماره تلفن: <span id="userPhone"></span></p>
+        <button onclick="logout()">خروج</button>
     </div>
 
     <script>
-        function toJalali(dateString) {
-            let parts = dateString.split('/');
-            if (parts.length === 3) {
-                let gy = parseInt(parts[0]);
-                let gm = parseInt(parts[1]);
-                let gd = parseInt(parts[2]);
-                let gregorian = jalaali.toGregorian(gy, gm, gd);
-                return new Date(gregorian.gy, gregorian.gm - 1, gregorian.gd);
-            }
-            return null;
-        }
-
         function register() {
             let user = {
-                name: document.getElementById("name").value,
-                family: document.getElementById("family").value,
-                nationalCode: document.getElementById("nationalCode").value,
-                birthdate: document.getElementById("birthdate").value,
-                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-                age: document.getElementById("age").value,
-                phone: document.getElementById("phone").value
+                name: document.getElementById("name").value.trim(),
+                family: document.getElementById("family").value.trim(),
+                nationalCode: document.getElementById("nationalCode").value.trim(),
+                birthdate: document.getElementById("birthdate").value.trim(),
+                gender: document.querySelector('input[name="gender"]:checked')?.value || "",
+                age: document.getElementById("age").value.trim(),
+                phone: document.getElementById("phone").value.trim()
             };
 
-            if (user.name && user.family && user.nationalCode && user.birthdate && user.gender && user.age && user.phone) {
-                localStorage.setItem("user", JSON.stringify(user));
-                alert("ثبت‌نام با موفقیت انجام شد!");
-                showLogin();
-            } else {
-                document.getElementById("signupError").innerText = "لطفاً تمام فیلدها را پر کنید.";
+            if (!user.name || !user.family || !user.nationalCode || !user.birthdate || !user.gender || !user.age || !user.phone) {
+                document.getElementById("signupError").innerText = "لطفاً تمام فیلدها را پر کنید!";
+                return;
             }
+
+            localStorage.setItem("user", JSON.stringify(user));
+            alert("ثبت‌نام موفقیت‌آمیز بود!");
+            showLogin();
         }
 
         function login() {
             let storedUser = JSON.parse(localStorage.getItem("user"));
-            let loginName = document.getElementBy0
+
+            let loginName = document.getElementById("loginName").value.trim();
+            let loginFamily = document.getElementById("loginFamily").value.trim();
+            let loginNationalCode = document.getElementById("loginNationalCode").value.trim();
+
+            if (!storedUser || storedUser.name !== loginName || storedUser.family !== loginFamily || storedUser.nationalCode !== loginNationalCode) {
+                document.getElementById("loginError").innerText = "اطلاعات وارد شده نادرست است!";
+                return;
+            }
+
+            document.getElementById("userName").innerText = storedUser.name;
+            document.getElementById("userFamily").innerText = storedUser.family;
+            document.getElementById("userNationalCode").innerText = storedUser.nationalCode;
+            document.getElementById("userBirthdate").innerText = storedUser.birthdate;
+            document.getElementById("userGender").innerText = storedUser.gender;
+            document.getElementById("userAge").innerText = storedUser.age;
+            document.getElementById("userPhone").innerText = storedUser.phone;
+
+            showDashboard();
+        }
+
+        function logout() {
+            localStorage.removeItem("user");
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "block";
+            document.getElementById("dashboard").style.display = "none";
+        }
+
+        function showSignup() {
+            document.getElementById("signup").style.display = "block";
+            document.getElementById("login").style.display = "none";
+            document.getElementById("dashboard").style.display = "none";
+        }
+
+        function showDashboard() {
+            document.getElementById("signup").style.display = "none";
+            document.getElementById("login").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+        }
+    </script>
+
+</body>
+</html>
