@@ -3,96 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل کاربری</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>ثبت‌نام | ورود | پنل کاربری</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <style>
-        .id-card {
-            display: none;
-            background: url('card-bg.jpg') no-repeat center;
-            background-size: cover;
-            width: 400px;
-            height: 250px;
-            padding: 15px;
-            text-align: right;
-            position: relative;
-            border: 2px solid #007a33;
-            border-radius: 10px;
+        body {
             font-family: Arial, sans-serif;
-        }
-        .id-card img {
-            width: 80px;
-            height: 100px;
-            position: absolute;
-            left: 15px;
-            top: 15px;
-            border: 2px solid #007a33;
-            object-fit: cover;
-        }
-        .id-card h3 {
-            margin-top: 0;
-            text-align: center;
-            background: green;
+            background: linear-gradient(to right, #28a745, #155724);
             color: white;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .id-card p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .id-card .footer {
-            position: absolute;
-            bottom: 5px;
-            width: 100%;
             text-align: center;
-            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 350px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input, select, button {
+            width: 80%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input, select {
+            background: #fff;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        a {
+            color: #28a745;
+            cursor: pointer;
+        }
+        a:hover {
+            color: #1e7e34;
+        }
+        .error {
             color: red;
         }
-        .edit-btn {
-            margin-top: 10px;
-            background: #ff5733;
-            color: white;
-            padding: 8px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
+        .id-card {
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .id-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #333;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>پنل کاربری</h2>
-        <div class="id-card" id="idCard">
-            <h3>کارت شناسایی اعضا</h3>
-            <img id="idPhoto" src="" alt="عکس پرسنلی">
-            <p><strong>نام:</strong> <span id="idName"></span></p>
-            <p><strong>نام خانوادگی:</strong> <span id="idFamily"></span></p>
-            <p><strong>کد ملی:</strong> <span id="idNationalCode"></span></p>
-            <p><strong>سمت:</strong> <span id="idRole"></span></p>
-            <div class="footer">نام سازمان مربوطه</div>
+        <div id="signup">
+            <h2>ثبت‌نام</h2>
+            <input type="text" id="name" placeholder="نام">
+            <input type="text" id="family" placeholder="نام خانوادگی">
+            <input type="text" id="nationalCode" placeholder="کد ملی">
+            <input type="text" id="birthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۲۳)">
+            <input type="number" id="age" placeholder="سن">
+            <input type="text" id="phone" placeholder="شماره تماس">
+            <label>آپلود عکس:</label>
+            <input type="file" id="profilePicture" accept="image/*">
+            <p class="error" id="signupError"></p>
+            <button onclick="register()">ثبت‌نام</button>
+            <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
-        <button class="edit-btn" onclick="resetUser()">ویرایش اطلاعات</button>
+
+        <div id="login" style="display: none;">
+            <h2>ورود</h2>
+            <input type="text" id="loginName" placeholder="نام">
+            <input type="text" id="loginFamily" placeholder="نام خانوادگی">
+            <input type="text" id="loginNationalCode" placeholder="کد ملی">
+            <p class="error" id="loginError"></p>
+            <button onclick="login()">ورود</button>
+            <p>حساب ندارید؟ <a href="#" onclick="showSignup()">ثبت‌نام</a></p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <h2>پنل کاربری</h2>
+            <p><strong>نام:</strong> <span id="userName"></span></p>
+            <p><strong>نام خانوادگی:</strong> <span id="userFamily"></span></p>
+            <p><strong>کد ملی:</strong> <span id="userNationalCode"></span></p>
+            <p><strong>سن:</strong> <span id="userAge"></span></p>
+            <p><strong>شماره تماس:</strong> <span id="userPhone"></span></p>
+            <button onclick="showIdCard()">مشاهده کارت شناسایی</button>
+            <button onclick="logout()">خروج</button>
+        </div>
+
+        <div id="idCard" style="display: none;">
+            <h2>کارت شناسایی</h2>
+            <div class="id-card">
+                <img id="idPhoto" src="" alt="عکس کاربر">
+                <p><strong>نام:</strong> <span id="idName"></span></p>
+                <p><strong>نام خانوادگی:</strong> <span id="idFamily"></span></p>
+                <p><strong>کد ملی:</strong> <span id="idNationalCode"></span></p>
+                <button onclick="downloadIdCard()">دانلود PDF</button>
+            </div>
+            <button onclick="hideIdCard()">بازگشت</button>
+        </div>
     </div>
 
-    <script>
-        function showIDCard() {
-            let user = JSON.parse(localStorage.getItem("user"));
-            if (user) {
-                document.getElementById("idName").textContent = user.name;
-                document.getElementById("idFamily").textContent = user.family;
-                document.getElementById("idNationalCode").textContent = user.nationalCode;
-                document.getElementById("idRole").textContent = user.role;
-                document.getElementById("idPhoto").src = user.photo;
-                document.getElementById("idCard").style.display = "block";
-            }
-        }
+<script>
+    function register() {
+        let reader = new FileReader();
+        let file = document.getElementById("profilePicture").files[0];
 
-        function resetUser() {
-            localStorage.removeItem("user");
-            window.location.href = "register.html"; // بازگشت به صفحه ثبت‌نام
-        }
+        reader.onloadend = function () {
+            let user = {
+                name: document.getElementById("name").value,
+                family: document.getElementById("family").value,
+                nationalCode: document.getElementById("nationalCode").value,
+                age: document.getElementById("age").value,
+                phone: document.getElementById("phone").value,
+                photo: reader.result || ""
+            };
 
-        window.onload = showIDCard;
-    </script>
+            localStorage.setItem("user", JSON.stringify(user));
+            alert("ثبت‌نام با موفقیت انجام شد!");
+            showLogin();
+        };
+
+        if (file) reader.readAsDataURL(file);
+        else reader.onloadend();
+    }
+
+    function login() {
+        let storedUser = JSON.parse(localStorage.getItem("user"));
+        if (!storedUser) return alert("کاربری یافت نشد!");
+
+        document.getElementById("userName").innerText = storedUser.name;
+        document.getElementById("userFamily").innerText = storedUser.family;
+        document.getElementById("userNationalCode").innerText = storedUser.nationalCode;
+        document.getElementById("userAge").innerText = storedUser.age;
+        document.getElementById("userPhone").innerText = storedUser.phone;
+
+        showDashboard();
+    }
+
+    function showDashboard() {
+        document.getElementById("signup").style.display = "none";
+        document.getElementById("login").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    }
+
+    function showIdCard() {
+        let user = JSON.parse(localStorage.getItem("user"));
+        document.getElementById("idName").innerText = user.name;
+        document.getElementById("idFamily").innerText = user.family;
+        document.getElementById("idNationalCode").innerText = user.nationalCode;
+        document.getElementById("idPhoto").src = user.photo;
+        document.getElementById("idCard").style.display = "block";
+        document.getElementById("dashboard").style.display = "none";
+    }
+
+    function hideIdCard() {
+        document.getElementById("idCard").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    }
+</script>
+
 </body>
 </html>
