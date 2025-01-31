@@ -97,6 +97,13 @@
             border-radius: 50%;
             margin: 10px 0;
         }
+        #profilePreview {
+            display: none;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +121,7 @@
             <input type="text" id="education" placeholder="تحصیلات">
             <textarea id="address" placeholder="آدرس محل زندگی"></textarea>
             <input type="file" id="profileImage" accept="image/*">
+            <img id="profilePreview" src="#" alt="پیش‌نمایش عکس">
             <p class="error" id="signupError"></p>
             <p class="success" id="signupSuccess"></p>
             <button onclick="register()">ثبت‌نام</button>
@@ -142,131 +150,139 @@
                 <p><strong>تحصیلات:</strong> <span id="userEducation"></span></p>
                 <p><strong>آدرس:</strong> <span id="userAddress"></span></p>
             </div>
+            <button onclick="editProfile()">ویرایش پروفایل</button>
             <button onclick="downloadIDCard()">دانلود کارت شناسایی</button>
             <button onclick="logout()">خروج</button>
+        </div>
+
+        <div id="editProfile" style="display: none;">
+            <h2>ویرایش پروفایل</h2>
+            <input type="text" id="editName" placeholder="نام">
+            <input type="text" id="editFamily" placeholder="نام خانوادگی">
+            <input type="text" id="editNationalCode" placeholder="کد ملی">
+            <input type="text" id="editBirthdate" placeholder="تاریخ تولد (مثال: ۱۳۸۰/۰۵/۲۳)">
+            <div class="gender-container">
+                <label><input type="radio" name="editGender" value="male"> مرد</label>
+                <label><input type="radio" name="editGender" value="female"> زن</label>
+            </div>
+            <input type="text" id="editEducation" placeholder="تحصیلات">
+            <textarea id="editAddress" placeholder="آدرس محل زندگی"></textarea>
+            <input type="file" id="editProfileImage" accept="image/*">
+            <img id="editProfilePreview" src="#" alt="پیش‌نمایش عکس">
+            <p class="error" id="editError"></p>
+            <p class="success" id="editSuccess"></p>
+            <button onclick="saveProfile()">ذخیره تغییرات</button>
+            <button onclick="showDashboard(currentUser)">بازگشت</button>
         </div>
     </div>
 
     <script>
-        function toJalali(dateString) {
-            let date = new Date(dateString);
-            let jalali = jalaali.toJalaali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            return `${jalali.jy}/${jalali.jm}/${jalali.jd}`;
-        }
+        let db;
+        const dbName = "UserDB";
+        const storeName = "Users";
+        let currentUser = null;
 
-        function validateNationalCode(nationalCode) {
-            return /^\d{10}$/.test(nationalCode);
-        }
-
-        function validateBirthdate(birthdate) {
-            return /^\d{4}\/\d{2}\/\d{2}$/.test(birthdate);
-        }
-
-        function showError(elementId, message) {
-            document.getElementById(elementId).innerText = message;
-        }
-
-        function clearError(elementId) {
-            document.getElementById(elementId).innerText = "";
-        }
-
-        function register() {
-            let name = document.getElementById("name").value.trim();
-            let family = document.getElementById("family").value.trim();
-            let nationalCode = document.getElementById("nationalCode").value.trim();
-            let birthdate = document.getElementById("birthdate").value.trim();
-            let gender = document.querySelector('input[name="gender"]:checked')?.value || '';
-            let education = document.getElementById("education").value.trim();
-            let address = document.getElementById("address").value.trim();
-            let profileImage = document.getElementById("profileImage").files[0];
-
-            clearError("signupError");
-            clearError("signupSuccess");
-
-            if (!name) {
-                showError("signupError", "لطفاً نام را وارد کنید.");
-                document.getElementById("name").focus();
-                return;
-            }
-            if (!family) {
-                showError("signupError", "لطفاً نام خانوادگی را وارد کنید.");
-                document.getElementById("family").focus();
-                return;
-            }
-            if (!validateNationalCode(nationalCode)) {
-                showError("signupError", "کد ملی باید 10 رقمی باشد.");
-                document.getElementById("nationalCode").focus();
-                return;
-            }
-            if (!validateBirthdate(birthdate)) {
-                showError("signupError", "تاریخ تولد باید به فرمت شمسی باشد (مثال: ۱۳۸۰/۰۵/۲۳).");
-                document.getElementById("birthdate").focus();
-                return;
-            }
-            if (!gender) {
-                showError("signupError", "لطفاً جنسیت را انتخاب کنید.");
-                return;
-            }
-            if (!education) {
-                showError("signupError", "لطفاً تحصیلات را وارد کنید.");
-                document.getElementById("education").focus();
-                return;
-            }
-            if (!address) {
-                showError("signupError", "لطفاً آدرس را وارد کنید.");
-                document.getElementById("address").focus();
-                return;
-            }
-            if (!profileImage) {
-                showError("signupError", "لطفاً عکس پرسنلی را آپلود کنید.");
-                return;
-            }
-
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                let user = {
-                    name: name,
-                    family: family,
-                    nationalCode: nationalCode,
-                    birthdate: birthdate,
-                    gender: gender,
-                    education: education,
-                    address: address,
-                    profileImage: e.target.result
-                };
-
-                let users = JSON.parse(localStorage.getItem("users")) || [];
-                users.push(user);
-                localStorage.setItem("users", JSON.stringify(users));
-
-                document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
-                setTimeout(() => {
-                    showLogin();
-                }, 2000);
+        // Initialize IndexedDB
+        function initDB() {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName, { keyPath: "nationalCode" });
+                }
             };
-            reader.readAsDataURL(profileImage);
+            request.onsuccess = function (event) {
+                db = event.target.result;
+            };
+            request.onerror = function (event) {
+                console.error("Error opening DB:", event.target.error);
+            };
         }
 
+        // Save user to IndexedDB
+        function saveUser(user) {
+            const transaction = db.transaction([storeName], "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.put(user);
+            request.onsuccess = function () {
+                console.log("User saved successfully.");
+            };
+            request.onerror = function (event) {
+                console.error("Error saving user:", event.target.error);
+            };
+        }
+
+        // Get user from IndexedDB
+        function getUser(nationalCode, callback) {
+            const transaction = db.transaction([storeName], "readonly");
+            const store = transaction.objectStore(storeName);
+            const request = store.get(nationalCode);
+            request.onsuccess = function (event) {
+                callback(event.target.result);
+            };
+            request.onerror = function (event) {
+                console.error("Error fetching user:", event.target.error);
+            };
+        }
+
+        // Preview profile image
+        document.getElementById("profileImage").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("profilePreview").src = e.target.result;
+                document.getElementById("profilePreview").style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Preview edit profile image
+        document.getElementById("editProfileImage").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("editProfilePreview").src = e.target.result;
+                document.getElementById("editProfilePreview").style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Register function
+        function register() {
+            const user = {
+                name: document.getElementById("name").value.trim(),
+                family: document.getElementById("family").value.trim(),
+                nationalCode: document.getElementById("nationalCode").value.trim(),
+                birthdate: document.getElementById("birthdate").value.trim(),
+                gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+                education: document.getElementById("education").value.trim(),
+                address: document.getElementById("address").value.trim(),
+                profileImage: document.getElementById("profilePreview").src
+            };
+
+            saveUser(user);
+            document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
+            setTimeout(() => showLogin(), 2000);
+        }
+
+        // Login function
         function login() {
-            let loginName = document.getElementById("loginName").value.trim();
-            let loginFamily = document.getElementById("loginFamily").value.trim();
-            let loginNationalCode = document.getElementById("loginNationalCode").value.trim();
-
-            clearError("loginError");
-
-            let users = JSON.parse(localStorage.getItem("users")) || [];
-            let user = users.find(u => u.name === loginName && u.family === loginFamily && u.nationalCode === loginNationalCode);
-
-            if (user) {
-                showDashboard(user);
-            } else {
-                showError("loginError", "نام، نام خانوادگی یا کد ملی اشتباه است.");
-            }
+            const nationalCode = document.getElementById("loginNationalCode").value.trim();
+            getUser(nationalCode, function (user) {
+                if (user) {
+                    currentUser = user;
+                    showDashboard(user);
+                } else {
+                    document.getElementById("loginError").innerText = "کاربر یافت نشد!";
+                }
+            });
         }
 
+        // Show dashboard
         function showDashboard(user) {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "none";
+            document.getElementById("editProfile").style.display = "none";
             document.getElementById("dashboard").style.display = "block";
 
             document.getElementById("userName").innerText = user.name;
@@ -279,29 +295,71 @@
             document.getElementById("userProfileImage").src = user.profileImage;
         }
 
+        // Edit profile
+        function editProfile() {
+            document.getElementById("dashboard").style.display = "none";
+            document.getElementById("editProfile").style.display = "block";
+
+            document.getElementById("editName").value = currentUser.name;
+            document.getElementById("editFamily").value = currentUser.family;
+            document.getElementById("editNationalCode").value = currentUser.nationalCode;
+            document.getElementById("editBirthdate").value = currentUser.birthdate;
+            document.querySelector(`input[name="editGender"][value="${currentUser.gender}"]`).checked = true;
+            document.getElementById("editEducation").value = currentUser.education;
+            document.getElementById("editAddress").value = currentUser.address;
+            document.getElementById("editProfilePreview").src = currentUser.profileImage;
+            document.getElementById("editProfilePreview").style.display = "block";
+        }
+
+        // Save profile changes
+        function saveProfile() {
+            const user = {
+                name: document.getElementById("editName").value.trim(),
+                family: document.getElementById("editFamily").value.trim(),
+                nationalCode: document.getElementById("editNationalCode").value.trim(),
+                birthdate: document.getElementById("editBirthdate").value.trim(),
+                gender: document.querySelector('input[name="editGender"]:checked')?.value || '',
+                education: document.getElementById("editEducation").value.trim(),
+                address: document.getElementById("editAddress").value.trim(),
+                profileImage: document.getElementById("editProfilePreview").src
+            };
+
+            saveUser(user);
+            currentUser = user;
+            showDashboard(user);
+        }
+
+        // Logout
         function logout() {
+            currentUser = null;
             document.getElementById("dashboard").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
 
+        // Show login
         function showLogin() {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "block";
         }
 
+        // Show signup
         function showSignup() {
             document.getElementById("login").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
 
+        // Download ID card
         function downloadIDCard() {
             html2canvas(document.getElementById("idCard")).then(canvas => {
-                let link = document.createElement("a");
+                const link = document.createElement("a");
                 link.download = "کارت شناسایی.png";
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         }
+
+        // Initialize DB on page load
+        initDB();
     </script>
 </body>
 </html>
