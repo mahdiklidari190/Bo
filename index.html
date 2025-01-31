@@ -69,6 +69,9 @@
         .error {
             color: red;
         }
+        .success {
+            color: #28a745;
+        }
         /* استایل کارت شناسایی */
         .id-card {
             width: 300px;
@@ -106,6 +109,7 @@
             <input type="number" id="age" placeholder="سن">
             <input type="text" id="phone" placeholder="شماره تماس">
             <p class="error" id="signupError"></p>
+            <p class="success" id="signupSuccess"></p>
             <button onclick="register()">ثبت‌نام</button>
             <p>حساب کاربری دارید؟ <a href="#" onclick="showLogin()">ورود</a></p>
         </div>
@@ -178,6 +182,7 @@
 
             if (errorMessage) {
                 document.getElementById("signupError").innerText = errorMessage;
+                document.getElementById("signupSuccess").innerText = ""; // پاک کردن پیام موفقیت
                 return;
             }
 
@@ -192,8 +197,15 @@
             };
 
             localStorage.setItem("user", JSON.stringify(user));
-            alert("ثبت‌نام با موفقیت انجام شد!");
-            showLogin();
+
+            // نمایش پیام موفقیت
+            document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
+            document.getElementById("signupError").innerText = ""; // پاک کردن پیام خطا
+
+            // هدایت به صفحه لاگین پس از 2 ثانیه
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
         }
 
         function login() {
