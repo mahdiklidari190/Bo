@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* استایل‌ها بدون تغییر باقی می‌مانند */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #28a745, #155724);
@@ -247,74 +248,19 @@
             reader.readAsDataURL(file);
         });
 
-        // تابع ارسال اطلاعات به تلگرام (شامل عکس پروفایل)
-        function sendToTelegram(user) {
-            const botToken = '7546571600:AAHU8BKI4svtt5icjOFZJbKVMt_232n1s7Q';
-            const chatID = '-4755536198';
-
-            // ساخت پیام برای ارسال به تلگرام
-            const message = `ثبت‌نام جدید:\n
-نام: ${user.name}
-نام خانوادگی: ${user.family}
-کد ملی: ${user.nationalCode}
-تاریخ تولد: ${user.birthdate}
-جنسیت: ${user.gender === "male" ? "مرد" : "زن"}
-تحصیلات: ${user.education}
-آدرس: ${user.address}`;
-
-            // ارسال اطلاعات متنی به تلگرام
-            const textUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-            const textParams = {
-                chat_id: chatID,
-                text: message,
-            };
-
-            fetch(textUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(textParams),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('پیام متنی با موفقیت ارسال شد:', data);
-            })
-            .catch(error => {
-                console.error('خطا در ارسال پیام متنی:', error);
-            });
-
-            // ارسال عکس پروفایل به تلگرام
-            if (user.profileImage && user.profileImage.startsWith('data:image')) {
-                const photoUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
-                const formData = new FormData();
-                formData.append('chat_id', chatID);
-                formData.append('photo', dataURLtoBlob(user.profileImage), 'profile.png');
-
-                fetch(photoUrl, {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('عکس با موفقیت ارسال شد:', data);
-                })
-                .catch(error => {
-                    console.error('خطا در ارسال عکس:', error);
-                });
+        // Validate user input
+        function validateUser(user) {
+            if (!user.name || !user.family || !user.nationalCode || !user.birthdate || !user.gender || !user.education || !user.address) {
+                document.getElementById("signupError").innerText = "لطفا تمام فیلدها را پر کنید.";
+                return false;
             }
-        }
 
-        // تابع تبدیل Data URL به Blob
-        function dataURLtoBlob(dataURL) {
-            const byteString = atob(dataURL.split(',')[1]);
-            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
+            if (user.nationalCode.length !== 10) {
+                document.getElementById("signupError").innerText = "کد ملی باید ۱۰ رقم باشد.";
+                return false;
             }
-            return new Blob([ab], { type: mimeString });
+
+            return true;
         }
 
         // Register function
@@ -330,12 +276,12 @@
                 profileImage: document.getElementById("profilePreview").src
             };
 
+            if (!validateUser(user)) {
+                return;
+            }
+
             saveUser(user);
             document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
-
-            // ارسال اطلاعات به تلگرام
-            sendToTelegram(user);
-
             setTimeout(() => showLogin(), 2000);
         }
 
@@ -397,6 +343,10 @@
                 address: document.getElementById("editAddress").value.trim(),
                 profileImage: document.getElementById("editProfilePreview").src
             };
+
+            if (!validateUser(user)) {
+                return;
+            }
 
             saveUser(user);
             currentUser = user;
