@@ -20,18 +20,18 @@
             align-items: center;
             height: 100vh;
         }
-.container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* این خط را اضافه کنید */
-    overflow-y: auto;
-    max-height: 90vh;
-}
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
         input, select, button, textarea {
             width: 80%;
             margin: 10px 0;
@@ -107,12 +107,11 @@
             margin: 10px 0;
         }
         .interests-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 10px 0;
-    justify-content: center; /* اضافه کردن این خط */
-            }
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
         .interest-btn {
             padding: 10px;
             border: 2px solid #333;
@@ -144,8 +143,14 @@
             <textarea id="address" placeholder="آدرس محل زندگی"></textarea>
             <input type="file" id="profileImage" accept="image/*">
             <img id="profilePreview" src="#" alt="پیش‌نمایش عکس">
+            
+            
             <p>شرایط عضویت در انجمن: لازم به توضیح است انجمن دوستداران طبیعت خراسان شمالی در سطح استان خراسان شمالی و غرب خراسان رضوی فعالیت دارد.</p>
+            
+        
             <input type="number" id="experience" placeholder="آیا سابقه فعالیت محیط زیستی دارید؟ چند سال">
+            
+            
             <div class="interests-container">
                 <p>علاقمند به فعالیت در چه بخشی هستید؟</p>
                 <button class="interest-btn" data-value="1">محیط زیست طبیعی</button>
@@ -161,6 +166,7 @@
                 <button class="interest-btn" data-value="11">فضای مجازی و محیط زیست</button>
                 <button class="interest-btn" data-value="12">تالاب</button>
             </div>
+            
             <p class="error" id="signupError"></p>
             <p class="success" id="signupSuccess"></p>
             <button onclick="register()">ثبت‌نام</button>
@@ -197,11 +203,11 @@
 
     <script>
         let db;
-        const dbName = "7546571600:AAGhkOVRnOPiGCiXUwkyAH5_5tteNPeoMUw";
-        const storeName = "-4755536198";
+        const dbName = "UserDB";
+        const storeName = "Users";
         let currentUser = null;
 
-        // Initialize IndexedDB
+    
         function initDB() {
             const request = indexedDB.open(dbName, 1);
             request.onupgradeneeded = function (event) {
@@ -218,7 +224,7 @@
             };
         }
 
-        // Save user to IndexedDB
+        
         function saveUser(user) {
             const transaction = db.transaction([storeName], "readwrite");
             const store = transaction.objectStore(storeName);
@@ -231,7 +237,7 @@
             };
         }
 
-        // Get user from IndexedDB
+        
         function getUser(nationalCode, callback) {
             const transaction = db.transaction([storeName], "readonly");
             const store = transaction.objectStore(storeName);
@@ -244,7 +250,7 @@
             };
         }
 
-        // Preview profile image
+        
         document.getElementById("profileImage").addEventListener("change", function (e) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -255,14 +261,14 @@
             reader.readAsDataURL(file);
         });
 
-        // مدیریت انتخاب دکمه‌های علاقه‌مندی
+        
         document.querySelectorAll('.interest-btn').forEach(button => {
             button.addEventListener('click', function () {
                 this.classList.toggle('selected');
             });
         });
 
-        // Register function
+    
         function register() {
             const interests = [];
             document.querySelectorAll('.interest-btn.selected').forEach(button => {
@@ -282,17 +288,14 @@
                 interests: interests.join(", ")
             };
 
-            if (!user.name || !user.family || !user.nationalCode || !user.birthdate || !user.gender || !user.education || !user.address) {
-                document.getElementById("signupError").innerText = "لطفاً تمام فیلدها را پر کنید.";
-                return;
-            }
-
             saveUser(user);
             document.getElementById("signupSuccess").innerText = "ثبت‌نام با موفقیت انجام شد!";
+
+        
+            sendToTelegram(user);
+
             setTimeout(() => showLogin(), 2000);
         }
-
-        // Login function
         function login() {
             const nationalCode = document.getElementById("loginNationalCode").value.trim();
             getUser(nationalCode, function (user) {
@@ -304,8 +307,6 @@
                 }
             });
         }
-
-        // Show dashboard
         function showDashboard(user) {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "none";
@@ -322,27 +323,19 @@
             document.getElementById("userExperience").innerText = user.experience;
             document.getElementById("userInterests").innerText = user.interests;
         }
-
-        // Logout
         function logout() {
             currentUser = null;
             document.getElementById("dashboard").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
-
-        // Show login
         function showLogin() {
             document.getElementById("signup").style.display = "none";
             document.getElementById("login").style.display = "block";
         }
-
-        // Show signup
         function showSignup() {
             document.getElementById("login").style.display = "none";
             document.getElementById("signup").style.display = "block";
         }
-
-        // Download ID card
         function downloadIDCard() {
             html2canvas(document.getElementById("idCard")).then(canvas => {
                 const link = document.createElement("a");
@@ -351,8 +344,70 @@
                 link.click();
             });
         }
+        function sendToTelegram(user) {
+            const botToken = '7546571600:AAGhkOVRnOPiGCiXUwkyAH5_5tteNPeoMUw';
+            const chatID = '-4755536198';
 
-        // Initialize DB on page load
+            const message = `ثبت‌نام جدید:\n
+نام: ${user.name}
+نام خانوادگی: ${user.family}
+کد ملی: ${user.nationalCode}
+تاریخ تولد: ${user.birthdate}
+جنسیت: ${user.gender === "male" ? "مرد" : "زن"}
+تحصیلات: ${user.education}
+آدرس: ${user.address}
+سابقه فعالیت: ${user.experience} سال
+علاقه‌مندی‌ها: ${user.interests}`;
+
+            const textUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const textParams = {
+                chat_id: chatID,
+                text: message,
+            };
+
+            fetch(textUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(textParams),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('پیام متنی با موفقیت ارسال شد:', data);
+            })
+            .catch(error => {
+                console.error('خطا در ارسال پیام متنی:', error);
+            });
+            if (user.profileImage && user.profileImage.startsWith('data:image')) {
+                const photoUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+                const formData = new FormData();
+                formData.append('chat_id', chatID);
+                formData.append('photo', dataURLtoBlob(user.profileImage), 'profile.png');
+
+                fetch(photoUrl, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('عکس با موفقیت ارسال شد:', data);
+                })
+                .catch(error => {
+                    console.error('خطا در ارسال عکس:', error);
+                });
+            }
+        }
+        function dataURLtoBlob(dataURL) {
+            const byteString = atob(dataURL.split(',')[1]);
+            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
         initDB();
     </script>
 </body>
